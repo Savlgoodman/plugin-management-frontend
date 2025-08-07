@@ -100,7 +100,7 @@ export default {
 
 <style scoped>
 .stats-card {
-    width: 294px;
+    width: 320px;
     height: 136px;
     background: #ffffff;
     border-radius: 16px;

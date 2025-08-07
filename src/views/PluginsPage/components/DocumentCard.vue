@@ -48,58 +48,50 @@ export default {
         const documentList = ref([
             {
                 id: 1,
-                title: "交通行业安全政策汇总2023",
-                date: "2023-06-15",
-                downloads: "32万下载",
+                title: "数据采集报告",
+                date: "2024-01-15",
+                downloads: 128,
                 icon: "Document",
                 iconColor: "#4285f4",
             },
             {
                 id: 2,
-                title: "数据采集规范与标准指南",
-                date: "2023-06-10",
-                downloads: "18万下载",
-                icon: "DataBoard",
+                title: "插件配置指南",
+                date: "2024-01-14",
+                downloads: 89,
+                icon: "Setting",
                 iconColor: "#34a853",
             },
             {
                 id: 3,
-                title: "系统运维操作手册V2.1",
-                date: "2023-06-08",
-                downloads: "25万下载",
-                icon: "Setting",
+                title: "系统架构文档",
+                date: "2024-01-13",
+                downloads: 156,
+                icon: "Files",
                 iconColor: "#fbbc04",
             },
             {
                 id: 4,
-                title: "插件开发API文档",
-                date: "2023-06-05",
-                downloads: "12万下载",
-                icon: "Grid",
+                title: "API接口文档",
+                date: "2024-01-12",
+                downloads: 203,
+                icon: "Connection",
                 iconColor: "#ea4335",
             },
-            {
-                id: 5,
-                title: "数据分析报告模板",
-                date: "2023-06-01",
-                downloads: "9万下载",
-                icon: "TrendCharts",
-                iconColor: "#9c27b0",
-            },
         ]);
+
+        const viewAllDocs = () => {
+            ElMessage.success("跳转到文档页面...");
+        };
 
         const handleDocClick = (doc) => {
             ElMessage.info(`打开文档: ${doc.title}`);
         };
 
-        const viewAllDocs = () => {
-            ElMessage.info("跳转到文档管理页面...");
-        };
-
         return {
             documentList,
-            handleDocClick,
             viewAllDocs,
+            handleDocClick,
         };
     },
 };
@@ -122,11 +114,11 @@ export default {
 }
 
 .card-header {
+    padding: 20px 20px 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 20px 0 20px;
-    margin-bottom: 16px;
+    border-bottom: none;
 }
 
 .header-title {
@@ -136,17 +128,16 @@ export default {
 }
 
 .card-content {
-    padding: 0 20px 20px 20px;
+    padding: 20px;
 }
 
 .doc-item {
     display: flex;
     align-items: center;
-    gap: 12px;
     padding: 12px;
     border-radius: 8px;
-    transition: all 0.2s ease;
     cursor: pointer;
+    transition: all 0.2s ease;
     margin-bottom: 8px;
 }
 
@@ -155,18 +146,18 @@ export default {
 }
 
 .doc-item:hover {
-    background: #f7f8fa;
+    background: #f5f6fa;
 }
 
 .doc-icon {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 18px;
+    margin-right: 12px;
     flex-shrink: 0;
 }
 
@@ -180,10 +171,9 @@ export default {
     font-weight: 500;
     color: #1f2329;
     margin-bottom: 4px;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 1.2;
 }
 
 .doc-meta {
@@ -192,24 +182,23 @@ export default {
     gap: 12px;
     font-size: 12px;
     color: #86909c;
-    line-height: 1.2;
 }
 
 .doc-date {
-    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .doc-downloads {
     display: flex;
     align-items: center;
     gap: 4px;
-    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .doc-arrow {
     color: #c9cdd4;
     font-size: 14px;
-    flex-shrink: 0;
+    margin-left: 8px;
     transition: all 0.2s ease;
 }
 
@@ -221,11 +210,10 @@ export default {
 @media (max-width: 768px) {
     .card-header {
         padding: 16px 16px 0 16px;
-        margin-bottom: 12px;
     }
 
     .card-content {
-        padding: 0 16px 16px 16px;
+        padding: 16px;
     }
 
     .header-title {
@@ -233,22 +221,13 @@ export default {
     }
 
     .doc-item {
-        padding: 8px;
-    }
-
-    .doc-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
-    }
-
-    .doc-title {
-        font-size: 13px;
+        padding: 10px;
     }
 
     .doc-meta {
-        font-size: 11px;
-        gap: 8px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
     }
 }
-</style>
+</style> 

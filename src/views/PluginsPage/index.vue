@@ -51,10 +51,10 @@
 
 <script>
 import { ref } from "vue";
-import StatsCard from "../components/StatsCard.vue";
-import PluginsList from "../components/PluginsList.vue";
-import PluginStatusChart from "../components/PluginStatusChart.vue";
-import DocumentCard from "../components/DocumentCard.vue";
+import StatsCard from "../../components/StatsCard.vue";
+import PluginsList from "./components/PluginsList.vue";
+import PluginStatusChart from "./components/PluginStatusChart.vue";
+import DocumentCard from "./components/DocumentCard.vue";
 
 export default {
     name: "PluginsPage",
@@ -150,7 +150,7 @@ export default {
 
 .stats-grid {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 20px;
     margin-bottom: 24px;

@@ -1,5 +1,5 @@
 <template>
-    <el-card class="plugins-list-card card-hover" shadow="hover">
+    <el-card class="plugins-list-card">
         <template #header>
             <div class="card-header">
                 <div class="header-left">
@@ -22,7 +22,7 @@
         <!-- 搜索和筛选 -->
         <div class="search-section">
             <el-row :gutter="16">
-                <el-col :span="8">
+                <el-col :span="16">
                     <el-input
                         v-model="searchText"
                         placeholder="搜索插件名称"
@@ -34,7 +34,7 @@
                         </template>
                     </el-input>
                 </el-col>
-                <el-col :span="6">
+                <el-col :span="4">
                     <el-select
                         v-model="statusFilter"
                         placeholder="状态筛选"

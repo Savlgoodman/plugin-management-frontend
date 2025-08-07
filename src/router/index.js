@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Layout from "../components/Layout.vue";
-import PluginsPage from "../views/PluginsPage.vue";
-import DocumentsPage from "../views/DocumentsPage.vue";
-import SettingsPage from "../views/SettingsPage.vue";
-import AnalyticsPage from "../views/AnalyticsPage.vue";
+import PluginsPage from "../views/PluginsPage/index.vue";
+import DocumentsPage from "../views/DocumentsPage/index.vue";
+import SettingsPage from "../views/SettingsPage/index.vue";
+import AnalyticsPage from "../views/AnalyticsPage/index.vue";
 
 const routes = [
     {

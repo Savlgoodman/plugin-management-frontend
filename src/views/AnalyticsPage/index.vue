@@ -1,11 +1,11 @@
 <template>
-    <div class="settings-page">
+    <div class="analytics-page">
         <div class="page-container">
             <div class="coming-soon-container">
                 <div class="coming-soon-icon">
-                    <el-icon size="80"><Setting /></el-icon>
+                    <el-icon size="80"><TrendCharts /></el-icon>
                 </div>
-                <h1 class="coming-soon-title">系统设置</h1>
+                <h1 class="coming-soon-title">数据分析</h1>
                 <p class="coming-soon-description">
                     此功能正在开发中，敬请期待...
                 </p>
@@ -13,16 +13,16 @@
                     <h3>即将上线的功能：</h3>
                     <ul class="feature-list">
                         <li>
-                            <el-icon><Check /></el-icon> 系统参数配置
+                            <el-icon><Check /></el-icon> 数据采集趋势分析
                         </li>
                         <li>
-                            <el-icon><Check /></el-icon> 用户权限管理
+                            <el-icon><Check /></el-icon> 插件性能统计
                         </li>
                         <li>
-                            <el-icon><Check /></el-icon> 数据备份设置
+                            <el-icon><Check /></el-icon> 数据质量评估
                         </li>
                         <li>
-                            <el-icon><Check /></el-icon> 系统监控配置
+                            <el-icon><Check /></el-icon> 自定义报表生成
                         </li>
                     </ul>
                 </div>
@@ -41,12 +41,12 @@
 
 <script>
 export default {
-    name: "SettingsPage",
+    name: "AnalyticsPage",
 };
 </script>
 
 <style scoped>
-.settings-page {
+.analytics-page {
     min-height: 100vh;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     display: flex;
@@ -114,4 +114,4 @@ export default {
     border-radius: 25px;
     padding: 12px 24px;
 }
-</style>
+</style> 
