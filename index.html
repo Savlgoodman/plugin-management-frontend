@@ -6,6 +6,27 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>数据采集管理平台</title>
+    
+    <!-- 字体优化 -->
+    <style>
+        /* 字体检测和回退处理 */
+        @supports (font-family: "方正公文小标宋") {
+            :root {
+                --font-loaded: "方正公文小标宋";
+            }
+        }
+        
+        @supports not (font-family: "方正公文小标宋") {
+            :root {
+                --font-loaded: "Microsoft YaHei";
+            }
+        }
+        
+        /* 防止字体加载时的闪烁 */
+        body {
+            font-display: swap;
+        }
+    </style>
 </head>
 
 <body>

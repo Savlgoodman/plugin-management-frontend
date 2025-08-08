@@ -1,3 +1,12 @@
+:root {
+    /* 字体变量 */
+    --primary-font: "方正公文小标宋", "FZXiaoBiaoSong-B05", "Helvetica Neue",
+        Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+        "微软雅黑", Arial, sans-serif;
+    --fallback-font: "Helvetica Neue", Helvetica, "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,8 +14,7 @@
 }
 
 body {
-    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB",
-        "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+    font-family: var(--primary-font);
     background-color: #f5f7fa;
     color: #303133;
 }

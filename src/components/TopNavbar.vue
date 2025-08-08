@@ -283,6 +283,21 @@ export default {
     color: #4285f4;
 }
 
+.notification-badge :deep(.el-badge__content) {
+    border-radius: 50% !important;
+    min-width: 18px !important;
+    height: 18px !important;
+    line-height: 18px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    border: 2px solid #ffffff !important;
+    box-sizing: border-box !important;
+}
+
 .user-dropdown {
     cursor: pointer;
 }

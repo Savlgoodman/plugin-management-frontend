@@ -65,7 +65,7 @@
         >
             <el-table-column type="selection" width="55" />
 
-            <el-table-column label="插件名称" prop="name" min-width="200">
+            <el-table-column label="插件名称" prop="name" min-width="200" header-align="center">
                 <template #default="{ row }">
                     <div class="plugin-name-cell">
                         <el-avatar :size="32" class="plugin-avatar">
@@ -81,7 +81,7 @@
                 </template>
             </el-table-column>
 
-            <el-table-column label="状态" prop="status" width="120">
+            <el-table-column label="状态" prop="status" width="120" header-align="center">
                 <template #default="{ row }">
                     <el-tag
                         :type="getStatusType(row.status)"
@@ -102,6 +102,7 @@
                 label="最近采集时间"
                 prop="lastCollectTime"
                 width="180"
+                header-align="center"
             >
                 <template #default="{ row }">
                     <div class="time-cell">
@@ -111,7 +112,7 @@
                 </template>
             </el-table-column>
 
-            <el-table-column label="采集频率" prop="frequency" width="120">
+            <el-table-column label="采集频率" prop="frequency" width="120" header-align="center">
                 <template #default="{ row }">
                     <el-tag type="info" effect="plain" round>
                         {{ row.frequency }}
@@ -119,7 +120,7 @@
                 </template>
             </el-table-column>
 
-            <el-table-column label="操作" width="180" fixed="right">
+            <el-table-column label="操作" width="180" fixed="right" header-align="center">
                 <template #default="{ row }">
                     <div class="action-buttons">
                         <el-tooltip content="查看详情" placement="top">
