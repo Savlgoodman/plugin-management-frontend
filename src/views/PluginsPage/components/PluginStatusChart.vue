@@ -1,7 +1,10 @@
 <template>
     <div class="status-chart-card">
         <div class="card-header">
-            <div class="header-title">插件运行状态（活跃插件比例）</div>
+            <div class="header-title">
+                <el-icon class="header-icon"><TrendCharts /></el-icon>
+                插件运行状态（活跃插件比例）
+            </div>
         </div>
 
         <div class="chart-content">
@@ -148,6 +151,14 @@ export default {
     font-size: 16px;
     font-weight: 600;
     color: #1f2329;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-icon {
+    color: #409eff;
+    font-size: 18px;
 }
 
 .chart-content {

@@ -1,7 +1,10 @@
 <template>
     <div class="document-card">
         <div class="card-header">
-            <div class="header-title">文档管理</div>
+            <div class="header-title">
+                <el-icon class="header-icon"><Document /></el-icon>
+                文档管理
+            </div>
             <el-button type="primary" text size="small" @click="viewAllDocs">
                 查看全部
             </el-button>
@@ -110,6 +113,14 @@ export default {
                 icon: "Connection",
                 iconColor: "#ea4335",
             },
+            {
+                id: 9,
+                title: "API接口文档",
+                date: "2024-01-12",
+                downloads: 203,
+                icon: "Connection",
+                iconColor: "#ea4335",
+            },
         ]);
 
         const viewAllDocs = () => {
@@ -157,6 +168,14 @@ export default {
     font-size: 16px;
     font-weight: 600;
     color: #1f2329;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-icon {
+    color: #409eff;
+    font-size: 18px;
 }
 
 .card-content {

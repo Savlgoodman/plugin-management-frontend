@@ -1,7 +1,10 @@
 <template>
     <div class="performance-chart-card">
         <div class="card-header">
-            <div class="header-title">采集性能分析</div>
+            <div class="header-title">
+                <el-icon class="header-icon"><DataBoard /></el-icon>
+                采集性能分析
+            </div>
             <div class="header-actions">
                 <el-button
                     type="primary"
@@ -273,6 +276,14 @@ export default {
     font-size: 16px;
     font-weight: 600;
     color: #1f2329;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-icon {
+    color: #409eff;
+    font-size: 18px;
 }
 
 .header-actions {
@@ -287,7 +298,7 @@ export default {
 
 .chart-container {
     width: 100%;
-    height: 400px;
+    height: 300px;
 }
 
 @media (max-width: 768px) {
@@ -303,7 +314,7 @@ export default {
     }
 
     .chart-container {
-        height: 300px;
+        height: 250px;
     }
 
     .header-title {

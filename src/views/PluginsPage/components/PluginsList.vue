@@ -65,7 +65,12 @@
         >
             <el-table-column type="selection" width="55" />
 
-            <el-table-column label="插件名称" prop="name" min-width="200" header-align="center">
+            <el-table-column
+                label="插件名称"
+                prop="name"
+                min-width="200"
+                header-align="center"
+            >
                 <template #default="{ row }">
                     <div class="plugin-name-cell">
                         <el-avatar :size="32" class="plugin-avatar">
@@ -81,7 +86,12 @@
                 </template>
             </el-table-column>
 
-            <el-table-column label="状态" prop="status" width="120" header-align="center">
+            <el-table-column
+                label="状态"
+                prop="status"
+                width="120"
+                header-align="center"
+            >
                 <template #default="{ row }">
                     <el-tag
                         :type="getStatusType(row.status)"
@@ -112,7 +122,12 @@
                 </template>
             </el-table-column>
 
-            <el-table-column label="采集频率" prop="frequency" width="120" header-align="center">
+            <el-table-column
+                label="采集频率"
+                prop="frequency"
+                width="120"
+                header-align="center"
+            >
                 <template #default="{ row }">
                     <el-tag type="info" effect="plain" round>
                         {{ row.frequency }}
@@ -120,7 +135,12 @@
                 </template>
             </el-table-column>
 
-            <el-table-column label="操作" width="180" fixed="right" header-align="center">
+            <el-table-column
+                label="操作"
+                width="180"
+                fixed="right"
+                header-align="center"
+            >
                 <template #default="{ row }">
                     <div class="action-buttons">
                         <el-tooltip content="查看详情" placement="top">
@@ -195,7 +215,7 @@ export default {
             {
                 id: 1,
                 name: "新闻采集器",
-                description: "自动采集各大新闻网站内容",
+                description: "采集各大新闻网站内容",
                 status: "running",
                 lastCollectTime: "2024-01-15 14:30:25",
                 frequency: "每10分钟",

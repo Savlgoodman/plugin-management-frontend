@@ -2,7 +2,10 @@
     <div class="recent-collection-card">
         <div class="card-header">
             <div class="header-left">
-                <div class="header-title">最近采集数据</div>
+                <div class="header-title">
+                    <el-icon class="header-icon"><Clock /></el-icon>
+                    最近采集数据
+                </div>
                 <div class="header-subtitle">查看最近从各数据源采集的最新信息</div>
             </div>
             <div class="header-actions">
@@ -21,7 +24,7 @@
         <div class="card-content">
             <div class="data-grid">
                 <div 
-                    v-for="item in recentData" 
+                    v-for="item in displayData" 
                     :key="item.id"
                     class="data-item"
                     @click="viewDetails(item)"
@@ -85,8 +88,22 @@
                 </div>
             </div>
 
+            <!-- 展开/收起控制 -->
+            <div class="expand-control" v-if="recentData.length > defaultShowCount">
+                <el-button 
+                    type="primary" 
+                    text 
+                    @click="toggleExpand"
+                >
+                    {{ isExpanded ? '收起' : `展开更多 (${recentData.length - defaultShowCount})` }}
+                    <el-icon>
+                        <component :is="isExpanded ? 'ArrowUp' : 'ArrowDown'" />
+                    </el-icon>
+                </el-button>
+            </div>
+
             <!-- 加载更多 -->
-            <div class="load-more" v-if="hasMore">
+            <div class="load-more" v-if="isExpanded && hasMore">
                 <el-button 
                     type="primary" 
                     text 
@@ -101,7 +118,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { ElMessage } from "element-plus";
 
 export default {
@@ -109,6 +126,8 @@ export default {
     setup() {
         const loading = ref(false);
         const hasMore = ref(true);
+        const isExpanded = ref(false);
+        const defaultShowCount = 3; // 默认显示3个项目，在一行展示
 
         // 模拟最近采集的数据
         const recentData = ref([
@@ -204,6 +223,19 @@ export default {
             }
         ]);
 
+        // 计算显示的数据
+        const displayData = computed(() => {
+            if (isExpanded.value) {
+                return recentData.value;
+            } else {
+                return recentData.value.slice(0, defaultShowCount);
+            }
+        });
+
+        const toggleExpand = () => {
+            isExpanded.value = !isExpanded.value;
+        };
+
         const refreshData = () => {
             loading.value = true;
             ElMessage.info("正在刷新最近采集数据...");
@@ -267,7 +299,11 @@ export default {
         return {
             loading,
             hasMore,
+            isExpanded,
+            defaultShowCount,
             recentData,
+            displayData,
+            toggleExpand,
             refreshData,
             loadMore,
             viewDetails
@@ -309,6 +345,14 @@ export default {
     font-weight: 600;
     color: #1f2329;
     margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-icon {
+    color: #409eff;
+    font-size: 20px;
 }
 
 .header-subtitle {
@@ -329,15 +373,15 @@ export default {
 
 .data-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 20px;
-    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
 }
 
 .data-item {
     background: #f8f9fa;
     border-radius: 12px;
-    padding: 20px;
+    padding: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
     border: 1px solid transparent;
@@ -354,18 +398,18 @@ export default {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .source-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 18px;
+    font-size: 16px;
     flex-shrink: 0;
 }
 
@@ -375,7 +419,7 @@ export default {
 }
 
 .source-name {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: #1f2329;
     margin-bottom: 4px;
@@ -387,19 +431,19 @@ export default {
 }
 
 .data-type {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .data-content {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .data-title {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
     color: #1f2329;
     line-height: 1.4;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -407,9 +451,9 @@ export default {
 }
 
 .data-description {
-    font-size: 14px;
+    font-size: 13px;
     color: #4e5969;
-    line-height: 1.5;
+    line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -425,14 +469,20 @@ export default {
 
 .action-tags {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
     flex: 1;
 }
 
+.expand-control {
+    text-align: center;
+    padding: 16px 0;
+    border-top: 1px solid #f2f3f5;
+}
+
 .load-more {
     text-align: center;
-    padding-top: 24px;
+    padding-top: 16px;
     border-top: 1px solid #f2f3f5;
 }
 
@@ -450,17 +500,17 @@ export default {
 
     .data-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 12px;
     }
 
     .data-item {
-        padding: 16px;
+        padding: 14px;
     }
 
     .data-actions {
         flex-direction: column;
         align-items: stretch;
-        gap: 12px;
+        gap: 10px;
     }
 
     .action-tags {
