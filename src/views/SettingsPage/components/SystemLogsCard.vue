@@ -172,6 +172,7 @@
 <script>
 import { ref, computed, onMounted } from "vue";
 import { ElMessage } from "element-plus";
+import { getSystemLogs } from "../api/settings";
 
 export default {
     name: "SystemLogsCard",
@@ -183,79 +184,31 @@ export default {
         const currentPage = ref(1);
         const pageSize = ref(5);
 
-        // 模拟日志数据
-        const logsData = ref([
-            {
-                id: 1,
-                timestamp: "2024-01-15 14:30:25",
-                type: "info",
-                source: "系统核心",
-                message: "系统启动成功，服务正常运行中",
-            },
-            {
-                id: 2,
-                timestamp: "2024-01-15 14:28:12",
-                type: "warning",
-                source: "数据库连接池",
-                message: "数据库连接数达到80%阈值，建议优化查询性能",
-            },
-            {
-                id: 3,
-                timestamp: "2024-01-15 14:25:08",
-                type: "error",
-                source: "文件上传服务",
-                message: "文件上传失败：磁盘空间不足，剩余空间仅剩5%",
-            },
-            {
-                id: 4,
-                timestamp: "2024-01-15 14:22:55",
-                type: "debug",
-                source: "数据采集模块",
-                message: "采集任务[新闻采集器]执行完成，共采集128条数据",
-            },
-            {
-                id: 5,
-                timestamp: "2024-01-15 14:20:30",
-                type: "info",
-                source: "用户管理",
-                message: "管理员[admin]登录系统",
-            },
-            {
-                id: 6,
-                timestamp: "2024-01-15 14:18:15",
-                type: "warning",
-                source: "缓存服务",
-                message: "Redis缓存命中率下降至65%，建议检查缓存策略",
-            },
-            {
-                id: 7,
-                timestamp: "2024-01-15 14:15:42",
-                type: "error",
-                source: "API网关",
-                message: "外部API调用失败：超时（30s），目标服务响应缓慢",
-            },
-            {
-                id: 8,
-                timestamp: "2024-01-15 14:12:20",
-                type: "debug",
-                source: "任务调度器",
-                message: "定时任务[每日数据备份]开始执行",
-            },
-            {
-                id: 9,
-                timestamp: "2024-01-15 14:10:05",
-                type: "info",
-                source: "安全审计",
-                message: "检测到异常登录尝试，已自动封锁IP地址 192.168.1.100",
-            },
-            {
-                id: 10,
-                timestamp: "2024-01-15 14:08:33",
-                type: "warning",
-                source: "消息队列",
-                message: "消息队列积压达到1000条，消费者处理速度较慢",
-            },
-        ]);
+        // 日志数据
+        const logsData = ref([]);
+
+        // 从API获取系统日志
+        const fetchSystemLogs = async () => {
+            loading.value = true;
+            try {
+                const params = {};
+                if (searchText.value) params.searchText = searchText.value;
+                if (logType.value) params.logType = logType.value;
+                if (dateRange.value && dateRange.value.length === 2) {
+                    params.dateRange = dateRange.value;
+                }
+
+                const response = await getSystemLogs(params);
+                if (response.success) {
+                    logsData.value = response.data;
+                }
+            } catch (error) {
+                console.error("获取系统日志失败:", error);
+                ElMessage.error("获取日志失败");
+            } finally {
+                loading.value = false;
+            }
+        };
 
         // 筛选后的日志
         const filteredLogs = computed(() => {
@@ -326,11 +279,7 @@ export default {
         // 事件处理
         const handleSearch = () => {
             currentPage.value = 1;
-            loading.value = true;
-            setTimeout(() => {
-                loading.value = false;
-                // ElMessage.success(`搜索到 ${filteredLogs.value.length} 条日志`);
-            }, 300);
+            fetchSystemLogs();
         };
 
         const handleReset = () => {
@@ -338,11 +287,7 @@ export default {
             logType.value = "";
             dateRange.value = [];
             currentPage.value = 1;
-            loading.value = true;
-            setTimeout(() => {
-                loading.value = false;
-                ElMessage.success("筛选条件已重置");
-            }, 300);
+            fetchSystemLogs();
         };
 
         const handleFilterChange = () => {
@@ -360,7 +305,7 @@ export default {
 
         onMounted(() => {
             // 初始化加载日志
-            handleSearch();
+            fetchSystemLogs();
         });
 
         return {
