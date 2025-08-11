@@ -59,6 +59,7 @@ import { ElMessage } from "element-plus";
 import StatsCard from "./components/StatsCard.vue";
 import DocumentCategories from "./components/DocumentCategories.vue";
 import DocumentsList from "./components/DocumentsList.vue";
+import { getStatsData } from "./api/documents";
 
 export default {
     name: "DocumentsPage",
@@ -70,40 +71,11 @@ export default {
     setup() {
         const documentsListRef = ref(null);
 
-        const statsData = ref([
-            {
-                title: "总文档数",
-                value: "1,296",
-                icon: "Document",
-                color: "#4285f4",
-                trend: "已分类管理",
-                subtitle: "",
-            },
-            {
-                title: "本周新增",
-                value: "48",
-                icon: "Plus",
-                color: "#34a853",
-                trend: "较上周增长15%",
-                subtitle: "",
-            },
-            {
-                title: "文档分类",
-                value: "16",
-                icon: "Grid",
-                color: "#ff9500",
-                trend: "16个插件分类",
-                subtitle: "",
-            },
-            {
-                title: "下载次数",
-                value: "3,842",
-                icon: "Download",
-                color: "#5856d6",
-                trend: "今日下载124次",
-                subtitle: "",
-            },
-        ]);
+        // 从 API 获取统计卡片数据
+        const statsData = ref([]);
+        getStatsData().then(data => {
+            statsData.value = data;
+        });
 
         const handleUploadDocument = () => {
             ElMessage.success("上传文档功能开发中...");

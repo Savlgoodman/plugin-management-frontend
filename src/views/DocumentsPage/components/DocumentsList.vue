@@ -260,6 +260,7 @@
 <script>
 import { ref, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { getDocuments, refreshDocuments, deleteDocument } from "../api/documents";
 
 export default {
     name: "DocumentsList",
@@ -272,111 +273,26 @@ export default {
         const currentPage = ref(1);
         const pageSize = ref(20);
 
-        // 模拟文档数据
-        const documents = ref([
-            {
-                id: 1,
-                name: "央视新闻：2024年政府工作报告解读",
-                extension: ".html",
-                type: "html",
-                category: "新闻采集器",
-                documentDate: "2024-01-15",
-                collectDate: "2024-01-16",
-                size: 2048576,
-                downloadCount: 45,
-            },
-            {
-                id: 2,
-                name: "淘宝商品价格趋势分析数据",
-                extension: ".json",
-                type: "json",
-                category: "电商数据爬虫",
-                documentDate: "2024-01-14",
-                collectDate: "2024-01-14",
-                size: 1536000,
-                downloadCount: 32,
-            },
-            {
-                id: 3,
-                name: "微博热搜话题统计报告",
-                extension: ".csv",
-                type: "csv",
-                category: "社交媒体监控",
-                documentDate: "2024-01-13",
-                collectDate: "2024-01-13",
-                size: 256000,
-                downloadCount: 18,
-            },
-            {
-                id: 4,
-                name: "沪深300指数历史数据",
-                extension: ".xlsx",
-                type: "excel",
-                category: "股票信息采集",
-                documentDate: "2024-01-12",
-                collectDate: "2024-01-12",
-                size: 10485760,
-                downloadCount: 8,
-            },
-            {
-                id: 5,
-                name: "北京市未来一周天气预报",
-                extension: ".xml",
-                type: "xml",
-                category: "天气数据采集",
-                documentDate: "2024-01-11",
-                collectDate: "2024-01-11",
-                size: 512000,
-                downloadCount: 23,
-            },
-            {
-                id: 6,
-                name: "链家二手房价格统计表",
-                extension: ".pdf",
-                type: "pdf",
-                category: "房产信息爬虫",
-                documentDate: "2024-01-10",
-                collectDate: "2024-01-10",
-                size: 3145728,
-                downloadCount: 15,
-            },
-            // 添加更多数据用于测试分页
-            ...Array.from({ length: 50 }, (_, i) => ({
-                id: i + 7,
-                name: `${
-                    [
-                        "新闻报道",
-                        "商品信息",
-                        "社交动态",
-                        "股票数据",
-                        "天气信息",
-                        "房产信息",
-                    ][i % 6]
-                }${i + 7}`,
-                extension: [".html", ".json", ".csv", ".xlsx", ".xml", ".pdf"][
-                    i % 6
-                ],
-                type: ["html", "json", "csv", "excel", "xml", "pdf"][i % 6],
-                category: [
-                    "新闻采集器",
-                    "电商数据爬虫",
-                    "社交媒体监控",
-                    "股票信息采集",
-                    "天气数据采集",
-                    "房产信息爬虫",
-                ][i % 6],
-                documentDate: `2024-01-${String(10 - (i % 10)).padStart(
-                    2,
-                    "0"
-                )}`,
-                collectDate: `2024-01-${String(10 - (i % 10)).padStart(
-                    2,
-                    "0"
-                )}`,
-                size: Math.floor(Math.random() * 10000000) + 100000,
-                downloadCount: Math.floor(Math.random() * 100),
-            })),
-        ]);
+        // 从 API 获取文档数据
+        const documents = ref([]);
+        
+        // 初始化加载数据
+        const loadData = () => {
+            loading.value = true;
+            getDocuments({
+                searchText: searchText.value,
+                category: categoryFilter.value,
+                dateRange: dateRange.value
+            }).then(data => {
+                documents.value = data;
+                loading.value = false;
+            });
+        };
+        
+        // 初始加载
+        onMounted(() => {
+            loadData();
+        });
 
         // 筛选后的文档
         const filteredDocuments = computed(() => {
@@ -480,11 +396,10 @@ export default {
         };
 
         const handleRefresh = () => {
-            loading.value = true;
-            setTimeout(() => {
-                loading.value = false;
+            refreshDocuments().then(() => {
                 ElMessage.success("文档列表已刷新");
-            }, 1000);
+                loadData();
+            });
         };
 
         const handleExport = () => {
@@ -520,13 +435,12 @@ export default {
                 }
             )
                 .then(() => {
-                    const index = documents.value.findIndex(
-                        (doc) => doc.id === row.id
-                    );
-                    if (index > -1) {
-                        documents.value.splice(index, 1);
+                    deleteDocument(row.id).then(() => {
                         ElMessage.success("删除成功");
-                    }
+                        loadData();
+                    }).catch(() => {
+                        ElMessage.error("删除失败");
+                    });
                 })
                 .catch(() => {
                     ElMessage.info("已取消删除");

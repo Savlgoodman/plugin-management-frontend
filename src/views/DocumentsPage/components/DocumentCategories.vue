@@ -81,68 +81,19 @@
 <script>
 import { ref, onMounted } from "vue";
 import { ElMessage } from "element-plus";
+import { getCategories } from "../api/documents";
 
 export default {
     name: "DocumentCategories",
     emits: ["category-change"],
     setup(props, { emit }) {
         const selectedCategory = ref("all");
-        const categories = ref([
-            {
-                id: "news-crawler",
-                name: "新闻采集器",
-                plugin: "新闻采集器",
-                count: 428,
-                percentage: 85,
-                color: "#4285f4",
-                icon: "Reading",
-            },
-            {
-                id: "ecommerce-spider",
-                name: "电商数据爬虫",
-                plugin: "电商数据爬虫",
-                count: 312,
-                percentage: 62,
-                color: "#ea4335",
-                icon: "ShoppingBag",
-            },
-            {
-                id: "social-monitor",
-                name: "社交媒体监控",
-                plugin: "社交媒体监控",
-                count: 285,
-                percentage: 57,
-                color: "#34a853",
-                icon: "ChatDotSquare",
-            },
-            {
-                id: "stock-collector",
-                name: "股票信息采集",
-                plugin: "股票信息采集",
-                count: 156,
-                percentage: 31,
-                color: "#fbbc04",
-                icon: "TrendCharts",
-            },
-            {
-                id: "weather-collector",
-                name: "天气数据采集",
-                plugin: "天气数据采集",
-                count: 89,
-                percentage: 18,
-                color: "#ff9500",
-                icon: "Cloudy",
-            },
-            {
-                id: "property-spider",
-                name: "房产信息爬虫",
-                plugin: "房产信息爬虫",
-                count: 26,
-                percentage: 5,
-                color: "#5856d6",
-                icon: "House",
-            },
-        ]);
+        const categories = ref([]);
+        
+        // 从 API 获取分类数据
+        getCategories().then(data => {
+            categories.value = data;
+        });
 
         const handleCategorySelect = (categoryId) => {
             selectedCategory.value = categoryId;
