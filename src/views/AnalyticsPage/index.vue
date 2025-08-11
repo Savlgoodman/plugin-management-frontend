@@ -9,23 +9,6 @@
                 <p class="coming-soon-description">
                     此功能正在开发中，敬请期待...
                 </p>
-                <div class="feature-preview">
-                    <h3>即将上线的功能：</h3>
-                    <ul class="feature-list">
-                        <li>
-                            <el-icon><Check /></el-icon> 数据采集趋势分析
-                        </li>
-                        <li>
-                            <el-icon><Check /></el-icon> 插件性能统计
-                        </li>
-                        <li>
-                            <el-icon><Check /></el-icon> 数据质量评估
-                        </li>
-                        <li>
-                            <el-icon><Check /></el-icon> 自定义报表生成
-                        </li>
-                    </ul>
-                </div>
                 <el-button
                     type="primary"
                     class="back-button"
@@ -82,36 +65,8 @@ export default {
     margin-bottom: 32px;
 }
 
-.feature-preview {
-    text-align: left;
-    margin-bottom: 32px;
-}
-
-.feature-preview h3 {
-    color: #303133;
-    margin-bottom: 16px;
-    text-align: center;
-}
-
-.feature-list {
-    list-style: none;
-    padding: 0;
-}
-
-.feature-list li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 0;
-    color: #606266;
-}
-
-.feature-list li .el-icon {
-    color: #67c23a;
-}
-
 .back-button {
     border-radius: 25px;
     padding: 12px 24px;
 }
-</style> 
+</style>

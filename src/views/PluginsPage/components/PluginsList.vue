@@ -460,10 +460,6 @@ export default {
     transition: all 0.3s ease;
 }
 
-.action-btn:hover {
-    transform: translateY(-2px);
-}
-
 .pagination-wrapper {
     display: flex;
     justify-content: center;
