@@ -3,9 +3,9 @@
         <div class="footer-container">
             <div class="footer-content">
                 <div class="footer-left">
-                    <span class="copyright"
-                        >© 2024 数据采集平台. 保留所有权利.</span
-                    >
+                    <div class="copyright">
+                        © 2025 Plugin Management Platform. 保留所有权利。
+                    </div>
                 </div>
                 <div class="footer-right">
                     <div class="footer-links">
@@ -29,8 +29,8 @@ export default {
 
 <style scoped>
 .app-footer {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: white;
+    color: black;
     padding: 20px 0;
     margin-top: auto;
     border-radius: 20px 20px 0 0;
@@ -52,11 +52,8 @@ export default {
 
 .footer-left {
     flex: 1;
-}
-
-.copyright {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(0, 0, 0, 0.6);
 }
 
 .footer-right {
@@ -70,7 +67,7 @@ export default {
 }
 
 .footer-link {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(0, 0, 0, 0.8);
     text-decoration: none;
     font-size: 14px;
     transition: color 0.3s ease;
@@ -81,7 +78,7 @@ export default {
 }
 
 .separator {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
     font-size: 12px;
 }
 
@@ -92,7 +89,11 @@ export default {
     }
 
     .footer-left {
-        flex: none;
+        margin-bottom: 8px;
+    }
+
+    .footer-links {
+        justify-content: center;
     }
 }
 </style>
