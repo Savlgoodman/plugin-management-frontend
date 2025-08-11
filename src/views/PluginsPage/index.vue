@@ -205,13 +205,11 @@ export default {
 }
 
 .stats-grid {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     margin-bottom: 24px;
 }
-
 .main-content-area {
     display: grid;
     grid-template-columns: 2fr 1fr;

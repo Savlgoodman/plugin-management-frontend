@@ -128,11 +128,11 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .card-title {
-    font-size: 14px;
+    font-size: 13px;
     color: #86909c;
     font-weight: 400;
     line-height: 1.2;
@@ -151,7 +151,7 @@ export default {
 .card-body {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     flex: 1;
 }
 
@@ -211,8 +211,8 @@ export default {
 
 @media (max-width: 1200px) {
     .stats-card {
-        width: 100%;
-        min-width: 250px;
+        width: calc(50% - 8px);
+        min-width: 200px;
     }
 }
 
@@ -220,19 +220,19 @@ export default {
     .stats-card {
         width: 100%;
         height: auto;
-        min-height: 120px;
+        min-height: 90px;
     }
 
     .card-content {
-        padding: 16px;
+        padding: 12px;
     }
 
     .main-value {
-        font-size: 28px;
+        font-size: 20px;
     }
 
     .card-header {
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
 }
 </style>
