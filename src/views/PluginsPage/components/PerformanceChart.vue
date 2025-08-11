@@ -28,25 +28,17 @@
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { ElMessage } from "element-plus";
 import * as echarts from "echarts";
+import { getPerformanceData } from "../api/plugins.js";
 
 export default {
     name: "PerformanceChart",
     setup() {
         const chartContainer = ref(null);
         let chartInstance = null;
-
-        // 模拟性能数据
         const performanceData = ref({
-            plugins: [
-                "新闻采集器",
-                "电商数据爬虫",
-                "社交媒体监控",
-                "股票信息采集",
-                "天气数据采集",
-                "房产信息爬虫",
-            ],
-            responseTime: [120, 85, 230, 45, 180, 95], // 响应时间(ms)
-            successRate: [98.5, 99.2, 94.8, 99.8, 96.3, 98.9], // 成功率(%)
+            plugins: [],
+            responseTime: [],
+            successRate: [],
         });
 
         const initChart = () => {
@@ -198,38 +190,39 @@ export default {
             window.addEventListener("resize", resizeHandler);
         };
 
-        const refreshData = () => {
+        const refreshData = async () => {
             ElMessage.info("正在刷新性能数据...");
+            await loadData();
+            ElMessage.success("性能数据已更新");
+        };
 
-            // 模拟数据刷新
-            setTimeout(() => {
-                // 随机生成新的性能数据
-                performanceData.value.responseTime =
-                    performanceData.value.responseTime.map(
-                        () => Math.floor(Math.random() * 200) + 50
-                    );
-                performanceData.value.successRate =
-                    performanceData.value.successRate.map(
-                        () =>
-                            Math.floor(Math.random() * 10) + 90 + Math.random()
-                    );
-
+        // 加载数据
+        const loadData = async () => {
+            try {
+                const response = await getPerformanceData();
+                performanceData.value = response.data;
                 if (chartInstance) {
                     chartInstance.setOption({
                         series: [
                             { data: performanceData.value.responseTime },
                             { data: performanceData.value.successRate },
                         ],
+                        xAxis: [
+                            {
+                                data: performanceData.value.plugins,
+                            },
+                        ],
                     });
                 }
-
-                ElMessage.success("性能数据已更新");
-            }, 1000);
+            } catch (error) {
+                ElMessage.error("获取性能数据失败");
+            }
         };
 
         onMounted(() => {
             nextTick(() => {
                 initChart();
+                loadData();
             });
         });
 

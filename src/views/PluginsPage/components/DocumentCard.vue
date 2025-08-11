@@ -44,84 +44,14 @@
 <script>
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
+import { getDocumentList } from "../api/plugins.js";
 
 export default {
     name: "DocumentCard",
     setup() {
-        const documentList = ref([
-            {
-                id: 1,
-                title: "数据采集报告",
-                date: "2024-01-15",
-                downloads: 128,
-                icon: "Document",
-                iconColor: "#4285f4",
-            },
-            {
-                id: 2,
-                title: "插件配置指南",
-                date: "2024-01-14",
-                downloads: 89,
-                icon: "Setting",
-                iconColor: "#34a853",
-            },
-            {
-                id: 3,
-                title: "系统架构文档",
-                date: "2024-01-13",
-                downloads: 156,
-                icon: "Files",
-                iconColor: "#fbbc04",
-            },
-            {
-                id: 4,
-                title: "API接口文档",
-                date: "2024-01-12",
-                downloads: 203,
-                icon: "Connection",
-                iconColor: "#ea4335",
-            },
-            {
-                id: 5,
-                title: "数据采集报告",
-                date: "2024-01-15",
-                downloads: 128,
-                icon: "Document",
-                iconColor: "#4285f4",
-            },
-            {
-                id: 6,
-                title: "插件配置指南",
-                date: "2024-01-14",
-                downloads: 89,
-                icon: "Setting",
-                iconColor: "#34a853",
-            },
-            {
-                id: 7,
-                title: "系统架构文档",
-                date: "2024-01-13",
-                downloads: 156,
-                icon: "Files",
-                iconColor: "#fbbc04",
-            },
-            {
-                id: 8,
-                title: "API接口文档",
-                date: "2024-01-12",
-                downloads: 203,
-                icon: "Connection",
-                iconColor: "#ea4335",
-            },
-            {
-                id: 9,
-                title: "API接口文档",
-                date: "2024-01-12",
-                downloads: 203,
-                icon: "Connection",
-                iconColor: "#ea4335",
-            },
-        ]);
+        const documentList = ref([]);
+        const currentPage = ref(1);
+        const pageSize = ref(10);
 
         const viewAllDocs = () => {
             ElMessage.success("跳转到文档页面...");
@@ -130,6 +60,23 @@ export default {
         const handleDocClick = (doc) => {
             ElMessage.info(`打开文档: ${doc.title}`);
         };
+
+        // 加载数据
+        const loadData = async () => {
+            try {
+                const params = {
+                    page: currentPage.value,
+                    pageSize: pageSize.value,
+                };
+                const response = await getDocumentList(params);
+                documentList.value = response.data.list;
+            } catch (error) {
+                ElMessage.error("获取文档列表失败");
+            }
+        };
+
+        // 初始化加载数据
+        loadData();
 
         return {
             documentList,

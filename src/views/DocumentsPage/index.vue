@@ -56,7 +56,7 @@
 <script>
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
-import StatsCard from "../PluginsPage/components/StatsCard.vue"; // 复用插件页面的统计卡片
+import StatsCard from "./components/StatsCard.vue";
 import DocumentCategories from "./components/DocumentCategories.vue";
 import DocumentsList from "./components/DocumentsList.vue";
 

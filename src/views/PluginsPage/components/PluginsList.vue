@@ -200,6 +200,7 @@
 <script>
 import { ref, computed } from "vue";
 import { ElMessage } from "element-plus";
+import { getPlugins } from "../api/plugins.js";
 
 export default {
     name: "PluginsList",
@@ -209,83 +210,30 @@ export default {
         const currentPage = ref(1);
         const pageSize = ref(10);
         const selectedPlugins = ref([]);
-
-        // 模拟插件数据
-        const pluginsData = ref([
-            {
-                id: 1,
-                name: "新闻采集器",
-                description: "采集各大新闻网站内容",
-                status: "running",
-                lastCollectTime: "2024-01-15 14:30:25",
-                frequency: "每10分钟",
-            },
-            {
-                id: 2,
-                name: "电商数据爬虫",
-                description: "采集电商平台商品信息",
-                status: "running",
-                lastCollectTime: "2024-01-15 14:28:12",
-                frequency: "每30分钟",
-            },
-            {
-                id: 3,
-                name: "社交媒体监控",
-                description: "监控社交媒体动态",
-                status: "stopped",
-                lastCollectTime: "2024-01-15 13:45:08",
-                frequency: "每小时",
-            },
-            {
-                id: 4,
-                name: "股票信息采集",
-                description: "实时采集股票价格信息",
-                status: "running",
-                lastCollectTime: "2024-01-15 14:29:55",
-                frequency: "每5分钟",
-            },
-            {
-                id: 5,
-                name: "天气数据采集",
-                description: "采集天气预报数据",
-                status: "error",
-                lastCollectTime: "2024-01-15 12:15:30",
-                frequency: "每6小时",
-            },
-            {
-                id: 6,
-                name: "房产信息爬虫",
-                description: "采集房产网站信息",
-                status: "running",
-                lastCollectTime: "2024-01-15 14:25:18",
-                frequency: "每2小时",
-            },
-        ]);
+        const pluginsData = ref([]);
 
         const totalPlugins = computed(() => pluginsData.value.length);
 
+        // 初始化数据
+        const loadData = async () => {
+            try {
+                const params = {
+                    page: currentPage.value,
+                    pageSize: pageSize.value,
+                    searchText: searchText.value,
+                    status: statusFilter.value,
+                };
+                const response = await getPlugins(params);
+                pluginsData.value = response.data.list;
+            } catch (error) {
+                ElMessage.error("获取插件数据失败");
+            }
+        };
+
+        // 搜索和筛选时重新加载数据
         const filteredPlugins = computed(() => {
-            let filtered = pluginsData.value;
-
-            if (searchText.value) {
-                filtered = filtered.filter(
-                    (plugin) =>
-                        plugin.name
-                            .toLowerCase()
-                            .includes(searchText.value.toLowerCase()) ||
-                        plugin.description
-                            .toLowerCase()
-                            .includes(searchText.value.toLowerCase())
-                );
-            }
-
-            if (statusFilter.value) {
-                filtered = filtered.filter(
-                    (plugin) => plugin.status === statusFilter.value
-                );
-            }
-
-            return filtered;
+            loadData();
+            return pluginsData.value;
         });
 
         const getStatusType = (status) => {
@@ -323,7 +271,8 @@ export default {
             ElMessage.success("添加插件功能开发中...");
         };
 
-        const handleRefresh = () => {
+        const handleRefresh = async () => {
+            await loadData();
             ElMessage.success("数据已刷新");
         };
 
@@ -338,6 +287,9 @@ export default {
         const handleSettings = (row) => {
             ElMessage.info(`插件设置: ${row.name}`);
         };
+
+        // 页面初始化时加载数据
+        loadData();
 
         return {
             searchText,

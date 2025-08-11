@@ -80,6 +80,7 @@ import RecentCollectionData from "./components/RecentCollectionData.vue";
 import PluginsList from "./components/PluginsList.vue";
 import PluginStatusChart from "./components/PluginStatusChart.vue";
 import DocumentCard from "./components/DocumentCard.vue";
+import { getStatsData } from "./api/plugins.js";
 
 export default {
     name: "PluginsPage",
@@ -92,40 +93,11 @@ export default {
         DocumentCard,
     },
     setup() {
-        const statsData = ref([
-            {
-                title: "活跃插件",
-                value: "16",
-                icon: "Download",
-                color: "#4285f4",
-                trend: "全部正在运行",
-                subtitle: "",
-            },
-            {
-                title: "今日采集",
-                value: "248",
-                icon: "DataBoard",
-                color: "#34a853",
-                trend: "较昨日增长12%",
-                subtitle: "",
-            },
-            {
-                title: "文档数量",
-                value: "1,296",
-                icon: "Document",
-                color: "#4285f4",
-                trend: "已分类管理",
-                subtitle: "",
-            },
-            {
-                title: "采集状态",
-                value: "100%",
-                icon: "TrendCharts",
-                color: "#fbbc04",
-                trend: "2个源略有故障",
-                subtitle: "",
-            },
-        ]);
+        const statsData = ref([]);
+
+        getStatsData().then((res) => {
+            statsData.value = res.data;
+        });
 
         const handleAddPlugin = () => {
             ElMessage.success("添加新插件功能开发中...");

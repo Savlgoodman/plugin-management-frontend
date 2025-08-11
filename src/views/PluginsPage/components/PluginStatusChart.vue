@@ -60,34 +60,26 @@
 <script>
 import { ref, computed } from "vue";
 import { ElMessage } from "element-plus";
+import { getPluginStatus } from "../api/plugins.js";
 
 export default {
     name: "PluginStatusChart",
     setup() {
-        const statusData = ref([
-            {
-                name: "活跃",
-                value: 12,
-                percentage: 75,
-                color: "#00b42a",
-            },
-            {
-                name: "准备中",
-                value: 3,
-                percentage: 18.75,
-                color: "#4285f4",
-            },
-            {
-                name: "执行中",
-                value: 1,
-                percentage: 6.25,
-                color: "#fbbc04",
-            },
-        ]);
+        const statusData = ref([]);
 
         const totalCount = computed(() => {
             return statusData.value.reduce((sum, item) => sum + item.value, 0);
         });
+
+        // 加载数据
+        const loadData = async () => {
+            try {
+                const response = await getPluginStatus();
+                statusData.value = response.data;
+            } catch (error) {
+                ElMessage.error("获取插件状态数据失败");
+            }
+        };
 
         const quickActions = ref([
             {
@@ -102,19 +94,15 @@ export default {
             switch (action.action) {
                 case "refresh":
                     ElMessage.info("正在检查所有插件状态...");
-                    updateStatusData();
+                    loadData();
                     break;
                 default:
                     ElMessage.info(`执行操作: ${action.name}`);
             }
         };
 
-        const updateStatusData = () => {
-            // 模拟数据更新
-            setTimeout(() => {
-                ElMessage.success("检查完成，所有插件状态正常");
-            }, 1500);
-        };
+        // 初始化加载数据
+        loadData();
 
         return {
             statusData,
