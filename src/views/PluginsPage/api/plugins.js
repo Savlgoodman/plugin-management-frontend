@@ -1,57 +1,16 @@
 import { ref } from "vue";
+import request from "../../../utils/request.js";
 
-// 模拟插件列表数据
-const mockPlugins = [
-    {
-        id: 1,
-        name: "新闻采集器",
-        description: "采集各大新闻网站内容",
-        status: "running",
-        lastCollectTime: "2024-01-15 14:30:25",
-        frequency: "每10分钟",
-    },
-    {
-        id: 2,
-        name: "电商数据爬虫",
-        description: "采集电商平台商品信息",
-        status: "running",
-        lastCollectTime: "2024-01-15 14:28:12",
-        frequency: "每30分钟",
-    },
-    {
-        id: 3,
-        name: "社交媒体监控",
-        description: "监控社交媒体动态",
-        status: "stopped",
-        lastCollectTime: "2024-01-15 13:45:08",
-        frequency: "每小时",
-    },
-    {
-        id: 4,
-        name: "股票信息采集",
-        description: "实时采集股票价格信息",
-        status: "running",
-        lastCollectTime: "2024-01-15 14:29:55",
-        frequency: "每5分钟",
-    },
-    {
-        id: 5,
-        name: "天气数据采集",
-        description: "采集天气预报数据",
-        status: "error",
-        lastCollectTime: "2024-01-15 12:15:30",
-        frequency: "每6小时",
-    },
-    {
-        id: 6,
-        name: "房产信息爬虫",
-        description: "采集房产网站信息",
-        status: "running",
-        lastCollectTime: "2024-01-15 14:25:18",
-        frequency: "每2小时",
-    },
-];
+/**
+ * 获取插件列表
+ * GET /plugin/list
+ * @returns {Object} 插件列表数据
+ */
+export const getPlugins = () => {
+    return request.get("/plugin/list");
+};
 
+// 保留其他API方法不变
 // 模拟插件状态统计数据
 const mockStatusData = [
     {
@@ -263,61 +222,6 @@ const mockDocumentList = [
         iconColor: "#ea4335",
     },
 ];
-
-/**
- * 获取插件列表
- * GET /api/plugins
- * @param {Object} params - 查询参数
- * @param {string} params.searchText - 搜索文本
- * @param {string} params.status - 状态筛选 (running, stopped, error)
- * @param {number} params.page - 页码
- * @param {number} params.pageSize - 每页数量
- * @returns {Object} 分页数据
- */
-export const getPlugins = (params = {}) => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let filteredData = [...mockPlugins];
-
-            // 搜索过滤
-            if (params.searchText) {
-                filteredData = filteredData.filter(
-                    (plugin) =>
-                        plugin.name
-                            .toLowerCase()
-                            .includes(params.searchText.toLowerCase()) ||
-                        plugin.description
-                            .toLowerCase()
-                            .includes(params.searchText.toLowerCase())
-                );
-            }
-
-            // 状态过滤
-            if (params.status) {
-                filteredData = filteredData.filter(
-                    (plugin) => plugin.status === params.status
-                );
-            }
-
-            // 分页
-            const total = filteredData.length;
-            const start = (params.page - 1) * params.pageSize;
-            const end = start + params.pageSize;
-            const data = filteredData.slice(start, end);
-
-            resolve({
-                code: 200,
-                message: "success",
-                data: {
-                    list: data,
-                    total: total,
-                    page: params.page,
-                    pageSize: params.pageSize,
-                },
-            });
-        }, 300);
-    });
-};
 
 /**
  * 获取插件状态统计

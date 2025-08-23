@@ -79,7 +79,7 @@
                         <div class="plugin-info">
                             <div class="plugin-name">{{ row.name }}</div>
                             <div class="plugin-description">
-                                {{ row.description }}
+                                {{ row.url }}
                             </div>
                         </div>
                     </div>
@@ -87,51 +87,16 @@
             </el-table-column>
 
             <el-table-column
-                label="状态"
-                prop="status"
-                width="120"
-                header-align="center"
-            >
-                <template #default="{ row }">
-                    <el-tag
-                        :type="getStatusType(row.status)"
-                        effect="light"
-                        round
-                        class="status-tag"
-                    >
-                        <span
-                            class="status-indicator"
-                            :class="getStatusClass(row.status)"
-                        ></span>
-                        {{ getStatusText(row.status) }}
-                    </el-tag>
-                </template>
-            </el-table-column>
-
-            <el-table-column
-                label="最近采集时间"
-                prop="lastCollectTime"
+                label="更新时间"
+                prop="update_time"
                 width="180"
                 header-align="center"
             >
                 <template #default="{ row }">
                     <div class="time-cell">
                         <el-icon class="time-icon"><Clock /></el-icon>
-                        {{ row.lastCollectTime }}
+                        {{ row.update_time }}
                     </div>
-                </template>
-            </el-table-column>
-
-            <el-table-column
-                label="采集频率"
-                prop="frequency"
-                width="120"
-                header-align="center"
-            >
-                <template #default="{ row }">
-                    <el-tag type="info" effect="plain" round>
-                        {{ row.frequency }}
-                    </el-tag>
                 </template>
             </el-table-column>
 
@@ -217,23 +182,23 @@ export default {
         // 初始化数据
         const loadData = async () => {
             try {
-                const params = {
-                    page: currentPage.value,
-                    pageSize: pageSize.value,
-                    searchText: searchText.value,
-                    status: statusFilter.value,
-                };
-                const response = await getPlugins(params);
-                pluginsData.value = response.data.list;
+                const response = await getPlugins();
+                pluginsData.value = response.data;
             } catch (error) {
                 ElMessage.error("获取插件数据失败");
             }
         };
 
-        // 搜索和筛选时重新加载数据
+        // 搜索和筛选时不重新加载数据，直接过滤现有数据
         const filteredPlugins = computed(() => {
-            loadData();
-            return pluginsData.value;
+            // 过滤搜索文本
+            let filteredData = pluginsData.value;
+            if (searchText.value) {
+                filteredData = filteredData.filter(plugin =>
+                    plugin.name.toLowerCase().includes(searchText.value.toLowerCase())
+                );
+            }
+            return filteredData;
         });
 
         const getStatusType = (status) => {

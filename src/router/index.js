@@ -4,6 +4,7 @@ import PluginsPage from "../views/PluginsPage/index.vue";
 import DocumentsPage from "../views/DocumentsPage/index.vue";
 import SettingsPage from "../views/SettingsPage/index.vue";
 import AnalyticsPage from "../views/AnalyticsPage/index.vue";
+import LoginPage from "../views/LoginPage/index.vue";
 
 const routes = [
     {
@@ -37,11 +38,26 @@ const routes = [
             },
         ],
     },
+    {
+        path: "/login",
+        name: "login",
+        component: LoginPage,
+        meta: { title: "登录" },
+    },
 ];
 
 const router = createRouter({
     history: createWebHistory(),
     routes,
+});
+
+router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem('access-token');
+    if (to.name !== 'login' && !token) {
+        next({ name: 'login' });
+    } else {
+        next();
+    }
 });
 
 export default router;
