@@ -1,14 +1,201 @@
-import { ref } from "vue";
 import request from "../../../utils/request.js";
+
+// ===========================================
+// 插件管理相关API
+// ===========================================
 
 /**
  * 获取插件列表
- * GET /plugin/list
- * @returns {Object} 插件列表数据
+ * @returns {Promise<Object>} 插件列表数据
  */
-export const getPlugins = () => {
-    return request.get("/plugin/list");
+export const fetchPluginsList = async () => {
+    try {
+        const response = await request.get("/plugin/list");
+        return {
+            success: true,
+            data: response.data || [],
+            message: response.message || "获取成功",
+        };
+    } catch (error) {
+        console.error("获取插件列表失败:", error);
+        return {
+            success: false,
+            data: [],
+            message: error.message || "获取插件列表失败",
+        };
+    }
 };
+
+/**
+ * 获取插件详情
+ * @param {string} id - 插件ID
+ * @returns {Promise<Object>} 插件详情数据
+ */
+export const fetchPluginDetail = async (id) => {
+    try {
+        const response = await request.get("/plugin/task", {
+            params: { id },
+        });
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "获取成功",
+        };
+    } catch (error) {
+        console.error("获取插件详情失败:", error);
+        return {
+            success: false,
+            data: {},
+            message: error.message || "获取插件详情失败",
+        };
+    }
+};
+
+/**
+ * 获取插件运行日志
+ * @param {string} id - 插件ID
+ * @param {string} saveName - 保存名称
+ * @returns {Promise<Object>} 日志数据
+ */
+export const fetchPluginLogs = async (id, saveName) => {
+    try {
+        const response = await request.get("/plugin/logs", {
+            params: { id, save_name: saveName },
+        });
+        return {
+            success: response.code === 200,
+            data: response.data || [],
+            message: response.message || "获取成功",
+        };
+    } catch (error) {
+        console.error("获取插件日志失败:", error);
+        return {
+            success: false,
+            data: [],
+            message: error.message || "获取插件日志失败",
+        };
+    }
+};
+
+/**
+ * 启动插件任务
+ * @param {string} id - 插件ID
+ * @returns {Promise<Object>} 启动结果
+ */
+export const startPluginTask = async (id) => {
+    try {
+        const response = await request.post("/plugin/invoke", null, {
+            params: { id },
+        });
+
+        // 判断响应成功的条件：code为200或success为true
+        if (response.code === 200 || response.success === true) {
+            return {
+                success: true,
+                data: {
+                    executionId: response.data.eid,
+                    status:
+                        response.data.status ||
+                        (response.data.is_running ? "running" : "pending"),
+                    isRunning: response.data.is_running || false,
+                    message: response.data.message,
+                },
+                message:
+                    response.data.message || response.message || "操作成功",
+            };
+        } else {
+            return {
+                success: false,
+                data: null,
+                message: response.message || "启动任务失败",
+            };
+        }
+    } catch (error) {
+        console.error("启动插件任务失败:", error);
+        return {
+            success: false,
+            data: null,
+            message: error.message || "启动插件任务失败",
+        };
+    }
+};
+
+/**
+ * 获取任务执行状态
+ * @param {string} executionId - 执行ID
+ * @returns {Promise<Object>} 状态数据
+ */
+export const fetchTaskStatus = async (executionId) => {
+    try {
+        const response = await request.get("/plugin/status", {
+            params: { E_id: executionId },
+        });
+        return {
+            success: response.code === 200,
+            data: response.data || "pending",
+            message: response.message || "获取成功",
+        };
+    } catch (error) {
+        console.error("获取任务状态失败:", error);
+        return {
+            success: false,
+            data: "error",
+            message: error.message || "获取任务状态失败",
+        };
+    }
+};
+
+/**
+ * 停止插件任务
+ * @param {string} executionId - 执行ID
+ * @returns {Promise<Object>} 停止结果
+ */
+export const stopPluginTask = async (executionId) => {
+    try {
+        const response = await request.post("/plugin/stop", null, {
+            params: { E_id: executionId },
+        });
+
+        if (response.code === 200) {
+            return {
+                success: true,
+                data: {
+                    executionId: response.data?.eid || executionId,
+                    message: response.data?.message || response.message,
+                },
+                message: response.data?.message || "停止成功",
+            };
+        } else if (response.code === 404) {
+            return {
+                success: false,
+                data: null,
+                message: response.message || "任务未找到或已停止",
+            };
+        } else {
+            return {
+                success: false,
+                data: null,
+                message: response.message || "停止任务失败",
+            };
+        }
+    } catch (error) {
+        console.error("停止插件任务失败:", error);
+        return {
+            success: false,
+            data: null,
+            message: error.message || "停止插件任务失败",
+        };
+    }
+};
+
+// ===========================================
+// 兼容旧版本API (保持向后兼容)
+// ===========================================
+
+/**
+ * @deprecated 请使用 fetchPluginsList
+ */
+export const getPlugins = fetchPluginsList;
 
 // 保留其他API方法不变
 // 模拟插件状态统计数据

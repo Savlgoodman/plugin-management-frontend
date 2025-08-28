@@ -6,7 +6,177 @@
                     <el-icon class="header-icon"><List /></el-icon>
                     <span class="header-title">文档列表</span>
                     <el-tag class="count-tag"
-                        >{{ filteredDocuments.length }} 个文档</el-tag
+                        >{{ total }} 个文档</el-tag
+                    >
+                </div>
+                <div class="header-right">
+                    <el-button
+                        type="primary"
+                        class="rounded-button"
+                        @click="handleBatchDownload"
+                        :disabled="selectedDocuments.length === 0"
+                    >
+                        <el-icon><Download /></el-icon>
+                        批量下载 ({{ selectedDocuments.length }})
+                    </el-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- 搜索和筛选 -->
+        <div class="search-section">
+            <el-row :gutter="16">
+                <el-col :span="10">
+                    <el-input
+                        v-model="searchText"
+                        placeholder="搜索文档名称、分类或来源"
+                        clearable
+                        class="search-input"
+                    >
+                        <template #prefix>
+                            <el-icon><Search /></el-icon>
+                        </template>
+                    </el-input>
+                </el-col>
+                <el-col :span="4">
+                    <!-- 字段选择器 -->
+                    <el-select
+                        v-model="selectedColumns"
+                        multiple
+                        collapse-tags
+                        collapse-tags-tooltip
+                        placeholder="选择显示字段"
+                        class="filter-select"
+                        @change="handleColumnChange"
+                    >
+                        <el-option
+                            v-for="column in availableColumns"
+                            :key="column"
+                            :label="column"
+                            :value="column"
+                        />
+                    </el-select>
+                </el-col>
+                <el-col :span="4">
+                    <el-date-picker
+                        v-model="dateRange"
+                        type="daterange"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                        format="YYYY-MM-DD"
+                        value-format="YYYY-MM-DD"
+                        class="date-picker"
+                        size="default"
+                    />
+                </el-col>
+                <el-col :span="6">
+                    <div class="action-buttons">
+                        <el-button
+                            @click="handleRefresh"
+                            class="rounded-button"
+                        >
+                            <el-icon><Refresh /></el-icon>
+                            刷新
+                        </el-button>
+                        <el-button @click="handleExport" class="rounded-button">
+                            <el-icon><Download /></el-icon>
+                            导出
+                        </el-button>
+                    </div>
+                </el-col>
+            </el-row>
+        </div>
+
+        <!-- 文档表格 -->
+        <el-table
+            :data="documents"
+            stripe
+            class="documents-table"
+            @selection-change="handleSelectionChange"
+            v-loading="loading"
+        >
+            <el-table-column
+                v-for="column in selectedColumns"
+                :key="column"
+                :label="column"
+                :prop="column"
+                min-width="120"
+                show-overflow-tooltip
+            />
+
+            <el-table-column
+                label="操作"
+                fixed="right"
+                width="160"
+                header-align="center"
+            >
+                <template #default="{ row }">
+                    <div class="action-buttons">
+                        <el-tooltip content="预览" placement="top">
+                            <el-button
+                                text
+                                @click="handlePreview(row)"
+                                class="action-btn"
+                            >
+                                <el-icon><View /></el-icon>
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip content="下载" placement="top">
+                            <el-button
+                                text
+                                @click="handleDownload(row)"
+                                class="action-btn"
+                            >
+                                <el-icon><Download /></el-icon>
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip content="详情" placement="top">
+                            <el-button
+                                text
+                                @click="handleViewDetails(row)"
+                                class="action-btn"
+                            >
+                                <el-icon><InfoFilled /></el-icon>
+                            </el-button>
+                        </el-tooltip>
+                        <el-tooltip content="删除" placement="top">
+                            <el-button
+                                text
+                                type="danger"
+                                @click="handleDelete(row)"
+                                class="action-btn"
+                            >
+                                <el-icon><Delete /></el-icon>
+                            </el-button>
+                        </el-tooltip>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+
+        <!-- 分页 -->
+        <div class="pagination-wrapper">
+            <el-pagination
+                v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
+                :page-sizes="[10, 20, 50, 100]"
+                :total="total"
+                layout="total, sizes, prev, pager, next, jumper"
+                class="pagination"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+            />
+        </div>
+    </el-card>
+    <el-card class="documents-list-card">
+        <template #header>
+            <div class="card-header">
+                <div class="header-left">
+                    <el-icon class="header-icon"><List /></el-icon>
+                    <span class="header-title">文档列表</span>
+                    <el-tag class="count-tag"
+                        >{{ total }} 个文档</el-tag
                     >
                 </div>
                 <div class="header-right">
@@ -247,7 +417,7 @@
                 v-model:current-page="currentPage"
                 v-model:page-size="pageSize"
                 :page-sizes="[10, 20, 50, 100]"
-                :total="filteredDocuments.length"
+                :total="total"
                 layout="total, sizes, prev, pager, next, jumper"
                 class="pagination"
                 @size-change="handleSizeChange"
@@ -258,9 +428,9 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { getDocuments, refreshDocuments, deleteDocument } from "../api/documents";
+import { getTableColumns, getTableData, refreshDocuments, deleteDocument } from "../api/documents";
 
 export default {
     name: "DocumentsList",
@@ -272,63 +442,56 @@ export default {
         const selectedDocuments = ref([]);
         const currentPage = ref(1);
         const pageSize = ref(20);
-
-        // 从 API 获取文档数据
+        const tableName = ref("");
+        const availableColumns = ref([]);
+        const selectedColumns = ref([]);
         const documents = ref([]);
-        
-        // 初始化加载数据
-        const loadData = () => {
-            loading.value = true;
-            getDocuments({
-                searchText: searchText.value,
-                category: categoryFilter.value,
-                dateRange: dateRange.value
-            }).then(data => {
-                documents.value = data;
+
+        // 加载表数据
+        const loadTableData = async () => {
+            if (!tableName.value) {
+                documents.value = [];
+                return;
+            }
+
+            try {
+                loading.value = true;
+                // 获取字段信息
+                const columns = await getTableColumns(tableName.value);
+                availableColumns.value = columns.map(col => col.name);
+                // 默认选择所有字段
+                selectedColumns.value = [...availableColumns.value];
+
+                // 获取表数据
+                const data = await getTableData(
+                    tableName.value,
+                    selectedColumns.value.join(','),
+                    (currentPage.value - 1) * pageSize.value,
+                    pageSize.value
+                );
+                documents.value = data.data;
+                total.value = data.total;
+            } catch (error) {
+                console.error("获取数据失败:", error);
+                documents.value = [];
+            } finally {
                 loading.value = false;
-            });
+            }
         };
-        
-        // 初始加载
-        onMounted(() => {
-            loadData();
+
+        // 监听分类变化
+        watch(() => tableName.value, () => {
+            currentPage.value = 1;
+            loadTableData();
         });
 
-        // 筛选后的文档
-        const filteredDocuments = computed(() => {
-            return documents.value.filter((doc) => {
-                const matchesSearch =
-                    !searchText.value ||
-                    doc.name
-                        .toLowerCase()
-                        .includes(searchText.value.toLowerCase()) ||
-                    doc.category
-                        .toLowerCase()
-                        .includes(searchText.value.toLowerCase()) ||
-                    doc.source
-                        .toLowerCase()
-                        .includes(searchText.value.toLowerCase());
-
-                const matchesCategory =
-                    !categoryFilter.value ||
-                    doc.category === categoryFilter.value;
-
-                const matchesDate =
-                    !dateRange.value ||
-                    dateRange.value.length === 0 ||
-                    (doc.collectDate >= dateRange.value[0] &&
-                        doc.collectDate <= dateRange.value[1]);
-
-                return matchesSearch && matchesCategory && matchesDate;
-            });
+        // 监听分页变化
+        watch([currentPage, pageSize], () => {
+            loadTableData();
         });
 
-        // 分页后的文档
-        const paginatedDocuments = computed(() => {
-            const start = (currentPage.value - 1) * pageSize.value;
-            const end = start + pageSize.value;
-            return filteredDocuments.value.slice(start, end);
-        });
+        // 总数
+        const total = ref(0);
 
         // 工具函数
         const formatDate = (dateStr) => {
@@ -398,7 +561,7 @@ export default {
         const handleRefresh = () => {
             refreshDocuments().then(() => {
                 ElMessage.success("文档列表已刷新");
-                loadData();
+                loadTableData();
             });
         };
 
@@ -437,7 +600,7 @@ export default {
                 .then(() => {
                     deleteDocument(row.id).then(() => {
                         ElMessage.success("删除成功");
-                        loadData();
+                        loadTableData();
                     }).catch(() => {
                         ElMessage.error("删除失败");
                     });
@@ -451,6 +614,16 @@ export default {
             // 组件挂载时的初始化逻辑
         });
 
+        // 处理分类变化
+        const handleCategoryChange = (data) => {
+            tableName.value = data.tableName;
+        };
+
+        // 处理字段选择变化
+        const handleColumnChange = () => {
+            loadTableData();
+        };
+
         return {
             loading,
             searchText,
@@ -459,9 +632,10 @@ export default {
             selectedDocuments,
             currentPage,
             pageSize,
+            total,
             documents,
-            filteredDocuments,
-            paginatedDocuments,
+            availableColumns,
+            selectedColumns,
             formatDate,
             formatFileSize,
             getDocumentTypeIcon,
@@ -477,6 +651,8 @@ export default {
             handleDownload,
             handleViewDetails,
             handleDelete,
+            handleCategoryChange,
+            handleColumnChange
         };
     },
 };

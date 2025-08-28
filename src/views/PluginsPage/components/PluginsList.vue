@@ -1,142 +1,29 @@
 <template>
     <el-card class="plugins-list-card">
-
-
-        <!-- 查看详情对话框 -->
-        <el-dialog
+        <!-- 插件详情模态框 -->
+        <PluginDetailModal
             v-model="pluginDetailDialog"
-            title="插件详情"
-            width="60%"
-            :destroy-on-close="true"
-            center
-            append-to-body
-        >
-            <div class="detail-content">
-                <el-descriptions :column="1" border>
-                    <el-descriptions-item label="ID">{{ pluginDetail.id }}</el-descriptions-item>
-                    <el-descriptions-item label="名称">{{ pluginDetail.name }}</el-descriptions-item>
-                    <el-descriptions-item label="URL">{{ pluginDetail.url }}</el-descriptions-item>
-                    <el-descriptions-item label="更新时间">{{ pluginDetail.update_time }}</el-descriptions-item>
-                    <el-descriptions-item label="输出格式">{{ pluginDetail.output_format }}</el-descriptions-item>
-                    <el-descriptions-item label="保存名称">{{ pluginDetail.save_name }}</el-descriptions-item>
-                    <el-descriptions-item label="去重">{{ pluginDetail.remove_duplicate ? '是' : '否' }}</el-descriptions-item>
-                    <el-descriptions-item label="创建时间">{{ pluginDetail.create_time }}</el-descriptions-item>
-                </el-descriptions>
+            :plugin-detail="pluginDetail"
+            :log-list="logList"
+            :log-loading="logLoading"
+            @refresh-logs="refreshDetailLogs"
+        />
 
-                <div class="logs-section">
-                    <div class="logs-header">
-                        <h4>运行日志</h4>
-                        <el-button
-                            size="small"
-                            type="primary"
-                            @click="refreshDetailLogs"
-                            :loading="logLoading"
-                        >
-                            <el-icon><Refresh /></el-icon>
-                            刷新
-                        </el-button>
-                    </div>
-                    <el-card class="logs-card">
-                        <div v-if="logList.length === 0" class="no-logs">
-                            暂无日志信息
-                        </div>
-                        <div v-else class="logs-list">
-                            <div
-                                v-for="(log, index) in logList"
-                                :key="index"
-                                class="log-item"
-                            >
-                                {{ log }}
-                            </div>
-                        </div>
-                    </el-card>
-                </div>
-            </div>
-        </el-dialog>
-
-        <!-- 设置对话框 -->
-        <el-dialog
+        <!-- 插件设置模态框 -->
+        <PluginSettingModal
             v-model="settingDialog"
-            title="插件设置"
-            width="50%"
-            :destroy-on-close="true"
-            center
-            append-to-body
-        >
-            <div class="setting-content">
-                <el-descriptions :column="1" border>
-                    <el-descriptions-item label="任务ID">{{ currentTask.id }}</el-descriptions-item>
-                    <el-descriptions-item label="任务名称">{{ currentTask.name }}</el-descriptions-item>
-                    <el-descriptions-item label="运行状态">
-                        <el-tag
-                            :type="getSettingStatusType(currentStatus)"
-                            effect="dark"
-                        >
-                            {{ getSettingStatusText(currentStatus) }}
-                        </el-tag>
-                    </el-descriptions-item>
-                    <el-descriptions-item label="运行ID">{{ executionId }}</el-descriptions-item>
-                </el-descriptions>
+            :current-task="currentTask"
+            :execution-id="executionId"
+            :current-status="currentStatus"
+            :log-list="logList"
+            :status-loading="statusLoading"
+            :log-loading="logLoading"
+            @start-task="handleStartTask"
+            @stop-task="handleStopTask"
+            @refresh-status="refreshStatus"
+            @refresh-logs="refreshSettingLogs"
+        />
 
-                <div class="status-actions">
-                    <el-button
-                        type="success"
-                        @click="startTask(currentTask)"
-                        :disabled="currentStatus === 'running'"
-                    >
-                        启动任务
-                    </el-button>
-                    <el-button
-                        type="danger"
-                        @click="stopTask"
-                        :disabled="currentStatus !== 'running'"
-                    >
-                        停止任务
-                    </el-button>
-                    <el-button
-                        type="warning"
-                        @click="refreshStatus"
-                        :loading="statusLoading"
-                    >
-                        <el-icon><Refresh /></el-icon>
-                        刷新状态
-                    </el-button>
-                </div>
-
-                <!-- 日志区域 -->
-                <div class="logs-section">
-                    <div class="logs-header">
-                        <h4>运行日志</h4>
-                        <el-button
-                            size="small"
-                            type="primary"
-                            @click="refreshSettingLogs"
-                            :loading="logLoading"
-                        >
-                            <el-icon><Refresh /></el-icon>
-                            刷新日志
-                        </el-button>
-                    </div>
-                    <el-card class="logs-card">
-                        <div v-if="logList.length === 0" class="no-logs">
-                            暂无日志信息
-                        </div>
-                        <div v-else class="logs-list">
-                            <div
-                                v-for="(log, index) in logList"
-                                :key="index"
-                                class="log-item"
-                            >
-                                {{ log }}
-                            </div>
-                        </div>
-                    </el-card>
-                </div>
-            </div>
-        </el-dialog>
-
-
-        
         <template #header>
             <div class="card-header">
                 <div class="header-left">
@@ -195,7 +82,7 @@
 
         <!-- 插件表格 -->
         <el-table
-            :data="filteredPlugins"
+            :data="paginatedPlugins"
             stripe
             class="plugins-table"
             @selection-change="handleSelectionChange"
@@ -289,7 +176,7 @@
             <el-pagination
                 v-model:current-page="currentPage"
                 v-model:page-size="pageSize"
-                :page-sizes="[10, 20, 50, 100]"
+                :page-sizes="[7, 14, 21, 35]"
                 :total="totalPlugins"
                 layout="total, sizes, prev, pager, next, jumper"
                 background
@@ -300,44 +187,76 @@
 </template>
 
 <script>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
-import { getPlugins } from "../api/plugins.js";
-// 新增API导入
-import request from "../../../utils/request.js";
+import {
+    fetchPluginsList,
+    fetchPluginDetail,
+    fetchPluginLogs,
+    startPluginTask,
+    fetchTaskStatus,
+    stopPluginTask,
+} from "../api/plugins.js";
+import PluginDetailModal from "./PluginDetailModal.vue";
+import PluginSettingModal from "./PluginSettingModal.vue";
 
 export default {
     name: "PluginsList",
+    components: {
+        PluginDetailModal,
+        PluginSettingModal,
+    },
     setup() {
         const searchText = ref("");
         const statusFilter = ref("");
         const currentPage = ref(1);
-        const pageSize = ref(10);
+        const pageSize = ref(7);
         const selectedPlugins = ref([]);
         const pluginsData = ref([]);
 
-        const totalPlugins = computed(() => pluginsData.value.length);
+        // 存储所有插件数据
+        const allPluginsData = ref([]);
+
+        const totalPlugins = computed(() => filteredPlugins.value.length);
 
         // 初始化数据
         const loadData = async () => {
             try {
-                const response = await getPlugins();
-                pluginsData.value = response.data;
+                const response = await fetchPluginsList();
+                if (response.success) {
+                    allPluginsData.value = response.data;
+                } else {
+                    ElMessage.error(response.message);
+                }
             } catch (error) {
                 ElMessage.error("获取插件数据失败");
+                console.error("加载插件数据失败:", error);
             }
         };
 
-        // 搜索和筛选时不重新加载数据，直接过滤现有数据
+        // 搜索和筛选后的数据
         const filteredPlugins = computed(() => {
-            // 过滤搜索文本
-            let filteredData = pluginsData.value;
+            let filteredData = allPluginsData.value;
             if (searchText.value) {
-                filteredData = filteredData.filter(plugin =>
-                    plugin.name.toLowerCase().includes(searchText.value.toLowerCase())
+                filteredData = filteredData.filter((plugin) =>
+                    plugin.name
+                        .toLowerCase()
+                        .includes(searchText.value.toLowerCase())
                 );
             }
             return filteredData;
+        });
+
+        // 监听搜索文本变化，重置到第一页
+        watch(searchText, () => {
+            currentPage.value = 1;
+        });
+
+        // 手动分页后的数据
+        const paginatedPlugins = computed(() => {
+            const start = (currentPage.value - 1) * pageSize.value;
+            const end = start + pageSize.value;
+            return filteredPlugins.value.slice(start, end);
         });
 
         const getStatusType = (status) => {
@@ -389,51 +308,47 @@ export default {
         const handleViewDetails = async (row) => {
             try {
                 // 获取插件详情
-                const detailResponse = await request.get(`/plugin/task`, {
-                    params: { id: row.id }
-                });
-                
-                if (detailResponse.code === 200) {
+                const detailResponse = await fetchPluginDetail(row.id);
+
+                if (detailResponse.success) {
                     pluginDetail.value = detailResponse.data;
-                    
+
                     // 获取日志信息
-                    await fetchDetailLogs(row.id, detailResponse.data.save_name);
+                    await refreshDetailLogs();
                 } else {
-                    ElMessage.error(detailResponse.message || "获取插件详情失败");
+                    ElMessage.error(detailResponse.message);
                 }
             } catch (error) {
                 ElMessage.error("获取插件详情失败");
                 console.error("获取插件详情失败:", error);
             }
-            
-            pluginDetailDialog.value = true;
-        };
 
-        // 获取日志（查看详情用）
-        const fetchDetailLogs = async (id, saveName) => {
-            logLoading.value = true;
-            try {
-                const logResponse = await request.get(`/plugin/logs`, {
-                    params: { id, save_name: saveName }
-                });
-                
-                if (logResponse.code === 200) {
-                    logList.value = logResponse.data;
-                } else {
-                    ElMessage.error(logResponse.message || "获取日志失败");
-                }
-            } catch (error) {
-                ElMessage.error("获取日志失败");
-                console.error("获取日志失败:", error);
-            } finally {
-                logLoading.value = false;
-            }
+            pluginDetailDialog.value = true;
         };
 
         // 刷新日志（查看详情用）
         const refreshDetailLogs = async () => {
             if (pluginDetail.value.id && pluginDetail.value.save_name) {
-                await fetchDetailLogs(pluginDetail.value.id, pluginDetail.value.save_name);
+                logLoading.value = true;
+                try {
+                    const logResponse = await fetchPluginLogs(
+                        pluginDetail.value.id,
+                        pluginDetail.value.save_name
+                    );
+
+                    if (logResponse.success) {
+                        logList.value = logResponse.data;
+                    } else {
+                        ElMessage.error(logResponse.message);
+                        logList.value = [];
+                    }
+                } catch (error) {
+                    ElMessage.error("获取日志失败");
+                    console.error("获取日志失败:", error);
+                    logList.value = [];
+                } finally {
+                    logLoading.value = false;
+                }
             }
         };
 
@@ -445,24 +360,22 @@ export default {
         const settingDialog = ref(false);
         const currentTask = ref({});
         const currentTaskDetail = ref({});
-        const executionId = ref('');
-        const currentStatus = ref('pending');
+        const executionId = ref("");
+        const currentStatus = ref("pending");
         const statusLoading = ref(false);
 
-        // 获取任务状态
-        const fetchStatus = async () => {
+        // 刷新状态
+        const refreshStatus = async () => {
             if (!executionId.value) return;
-            
+
             statusLoading.value = true;
             try {
-                const statusResponse = await request.get(`/plugin/status`, {
-                    params: { E_id: executionId.value }
-                });
-                
-                if (statusResponse.code === 200) {
+                const statusResponse = await fetchTaskStatus(executionId.value);
+
+                if (statusResponse.success) {
                     currentStatus.value = statusResponse.data;
                 } else {
-                    ElMessage.error(statusResponse.message || "获取状态失败");
+                    ElMessage.error(statusResponse.message);
                 }
             } catch (error) {
                 ElMessage.error("获取状态失败");
@@ -472,72 +385,60 @@ export default {
             }
         };
 
-        // 刷新状态
-        const refreshStatus = async () => {
-            await fetchStatus();
-        };
-
-        // 获取日志（设置页面用）
-        const fetchSettingLogs = async () => {
-            if (!currentTask.value.id || !currentTaskDetail.value.save_name) return;
-            
-            logLoading.value = true;
-            try {
-                const logResponse = await request.get(`/plugin/logs`, {
-                    params: {
-                        id: currentTask.value.id,
-                        save_name: currentTaskDetail.value.save_name
-                    }
-                });
-                
-                if (logResponse.code === 200) {
-                    logList.value = logResponse.data;
-                } else {
-                    ElMessage.error(logResponse.message || "获取日志失败");
-                }
-            } catch (error) {
-                ElMessage.error("获取日志失败");
-                console.error("获取日志失败:", error);
-            } finally {
-                logLoading.value = false;
-            }
-        };
-
         // 刷新日志（设置页面用）
         const refreshSettingLogs = async () => {
             if (currentTask.value.id && currentTaskDetail.value.save_name) {
-                await fetchSettingLogs();
+                logLoading.value = true;
+                try {
+                    const logResponse = await fetchPluginLogs(
+                        currentTask.value.id,
+                        currentTaskDetail.value.save_name
+                    );
+
+                    if (logResponse.success) {
+                        logList.value = logResponse.data;
+                    } else {
+                        ElMessage.error(logResponse.message);
+                        logList.value = [];
+                    }
+                } catch (error) {
+                    ElMessage.error("获取日志失败");
+                    console.error("获取日志失败:", error);
+                    logList.value = [];
+                } finally {
+                    logLoading.value = false;
+                }
             } else {
                 // 如果没有获取到save_name，尝试重新获取插件详情
                 if (currentTask.value.id) {
-                    const detailResponse = await request.get(`/plugin/task`, {
-                        params: { id: currentTask.value.id }
-                    });
-                    
-                    if (detailResponse.code === 200) {
+                    const detailResponse = await fetchPluginDetail(
+                        currentTask.value.id
+                    );
+
+                    if (detailResponse.success) {
                         currentTaskDetail.value = detailResponse.data;
-                        await fetchSettingLogs();
+                        await refreshSettingLogs();
                     }
                 }
             }
         };
 
         // 启动任务
-        const startTask = async (task) => {
+        const handleStartTask = async (task) => {
             try {
-                const invokeResponse = await request.post(`/plugin/invoke`, null, {
-                    params: { id: task.id }
-                });
-                
-                if (invokeResponse.code === 200) {
-                    executionId.value = invokeResponse.data;
-                    currentStatus.value = 'running';
-                    ElMessage.success("任务启动成功");
-                    
-                    // 开始轮询状态
-                    await fetchStatus();
+                const response = await startPluginTask(task.id);
+
+                if (response.success) {
+                    executionId.value = response.data.executionId;
+                    currentStatus.value = response.data.status;
+                    ElMessage.success(response.message);
+
+                    // 如果任务正在运行，开始轮询状态
+                    if (response.data.isRunning) {
+                        await refreshStatus();
+                    }
                 } else {
-                    ElMessage.error(invokeResponse.message || "启动任务失败");
+                    ElMessage.error(response.message);
                 }
             } catch (error) {
                 ElMessage.error("启动任务失败");
@@ -545,10 +446,28 @@ export default {
             }
         };
 
-        // 停止任务（假设有一个停止接口，这里先用消息提示）
-        const stopTask = () => {
-            ElMessage.warning("停止任务功能待实现");
-            // 实际项目中这里会调用停止任务的API
+        // 停止任务
+        const handleStopTask = async () => {
+            if (!executionId.value) {
+                ElMessage.warning("没有正在运行的任务");
+                return;
+            }
+
+            try {
+                const response = await stopPluginTask(executionId.value);
+
+                if (response.success) {
+                    currentStatus.value = "stopped";
+                    ElMessage.success(response.message);
+                    // 刷新状态以确保获取最新状态
+                    await refreshStatus();
+                } else {
+                    ElMessage.error(response.message);
+                }
+            } catch (error) {
+                ElMessage.error("停止任务失败");
+                console.error("停止任务失败:", error);
+            }
         };
 
         // 处理设置按钮点击
@@ -556,26 +475,24 @@ export default {
             currentTask.value = row;
             try {
                 // 获取插件详情以获取save_name字段
-                const detailResponse = await request.get(`/plugin/task`, {
-                    params: { id: row.id }
-                });
-                
-                if (detailResponse.code === 200) {
+                const detailResponse = await fetchPluginDetail(row.id);
+
+                if (detailResponse.success) {
                     currentTaskDetail.value = detailResponse.data;
                     // 获取日志信息
-                    await fetchSettingLogs();
+                    await refreshSettingLogs();
                 } else {
-                    ElMessage.error(detailResponse.message || "获取插件详情失败");
+                    ElMessage.error(detailResponse.message);
                 }
             } catch (error) {
                 ElMessage.error("获取插件详情失败");
                 console.error("获取插件详情失败:", error);
             }
-            
+
             // 尝试获取上次的运行ID（如果有）
             // 这里可以添加获取上次运行记录的逻辑
-            executionId.value = '';
-            currentStatus.value = 'pending';
+            executionId.value = "";
+            currentStatus.value = "pending";
             settingDialog.value = true;
         };
 
@@ -585,7 +502,8 @@ export default {
                 pending: "info",
                 running: "success",
                 finished: "warning",
-                error: "danger"
+                stopped: "info",
+                error: "danger",
             };
             return statusMap[status] || "info";
         };
@@ -596,7 +514,8 @@ export default {
                 pending: "等待中",
                 running: "运行中",
                 finished: "已完成",
-                error: "错误"
+                stopped: "已停止",
+                error: "错误",
             };
             return statusMap[status] || "未知";
         };
@@ -610,9 +529,10 @@ export default {
             currentPage,
             pageSize,
             selectedPlugins,
-            pluginsData,
+            allPluginsData,
             totalPlugins,
             filteredPlugins,
+            paginatedPlugins,
             getStatusType,
             getStatusClass,
             getStatusText,
@@ -634,17 +554,15 @@ export default {
             currentStatus,
             statusLoading,
             // 函数相关
-            fetchDetailLogs,
             refreshDetailLogs,
-            fetchSettingLogs,
             refreshStatus,
-            startTask,
-            stopTask,
+            handleStartTask,
+            handleStopTask,
             getSettingStatusType,
             getSettingStatusText,
             refreshSettingLogs,
         };
-    }
+    },
 };
 </script>
 

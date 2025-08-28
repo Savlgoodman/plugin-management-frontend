@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { getCategories } from "../api/documents";
 
@@ -91,13 +91,37 @@ export default {
         const categories = ref([]);
         
         // 从 API 获取分类数据
-        getCategories().then(data => {
-            categories.value = data;
-        });
+        const loadCategories = async () => {
+            try {
+                const data = await getCategories();
+                categories.value = data;
+            } catch (error) {
+                console.error("获取分类数据失败:", error);
+            }
+        };
 
-        const handleCategorySelect = (categoryId) => {
+        loadCategories();
+
+        // 存储选中的分类ID和对应的表名
+        const selectedCategoryTable = ref("");
+
+        const handleCategorySelect = async (categoryId) => {
             selectedCategory.value = categoryId;
-            emit("category-change", categoryId);
+            
+            // 如果不是"全部分类"，获取该分类的表名
+            if (categoryId !== "all") {
+                const category = categories.value.find(c => c.id === categoryId);
+                if (category) {
+                    selectedCategoryTable.value = category.table_name; // 使用table_name作为表名
+                }
+            } else {
+                selectedCategoryTable.value = "";
+            }
+            
+            emit("category-change", {
+                categoryId: categoryId,
+                tableName: selectedCategoryTable.value
+            });
 
             const categoryName =
                 categoryId === "all"
@@ -114,7 +138,10 @@ export default {
 
         onMounted(() => {
             // 初始化时通知父组件当前选中的分类
-            emit("category-change", selectedCategory.value);
+            emit("category-change", {
+                categoryId: selectedCategory.value,
+                tableName: selectedCategoryTable.value
+            });
         });
 
         return {

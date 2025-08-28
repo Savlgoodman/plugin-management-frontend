@@ -46,11 +46,24 @@ service.interceptors.response.use(
     },
     (error) => {
         console.log("err" + error); // for debug
-        ElMessage({
-            message: error.message,
-            type: "error",
-            duration: 5 * 1000,
-        });
+        // 403 未授权，token失效
+        if (error.response && error.response.status === 403) {
+            ElMessage({
+                message: "登录已过期，请重新登录",
+                type: "error",
+                duration: 5 * 1000,
+            });
+            // 清除本地存储的token
+            localStorage.removeItem("access-token");
+            // 跳转到登录页
+            window.location.href = "/login";
+        } else {
+            ElMessage({
+                message: error.message,
+                type: "error",
+                duration: 5 * 1000,
+            });
+        }
         return Promise.reject(error);
     }
 );

@@ -73,7 +73,7 @@
                                     <el-icon><Setting /></el-icon>
                                     账户设置
                                 </el-dropdown-item>
-                                <el-dropdown-item divided>
+                                <el-dropdown-item divided @click="handleLogout">
                                     <el-icon><SwitchButton /></el-icon>
                                     退出登录
                                 </el-dropdown-item>
@@ -95,6 +95,14 @@ export default {
     setup() {
         const router = useRouter();
         const route = useRoute();
+
+        // 退出登录处理
+        const handleLogout = () => {
+            // 清除本地存储的token
+            localStorage.removeItem("access-token");
+            // 跳转到登录页
+            router.push("/login");
+        };
 
         const menuItems = ref([
             {
@@ -136,6 +144,7 @@ export default {
             menuItems,
             activeIndex,
             handleSelect,
+            handleLogout,
         };
     },
 };

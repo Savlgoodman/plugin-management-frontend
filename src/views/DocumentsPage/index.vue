@@ -59,7 +59,7 @@ import { ElMessage } from "element-plus";
 import StatsCard from "./components/StatsCard.vue";
 import DocumentCategories from "./components/DocumentCategories.vue";
 import DocumentsList from "./components/DocumentsList.vue";
-import { getStatsData } from "./api/documents";
+// getStatsData 已从API中移除，因为后端不再提供统计卡片数据
 
 export default {
     name: "DocumentsPage",
@@ -71,20 +71,50 @@ export default {
     setup() {
         const documentsListRef = ref(null);
 
-        // 从 API 获取统计卡片数据
-        const statsData = ref([]);
-        getStatsData().then(data => {
-            statsData.value = data;
-        });
+        // 统计卡片数据暂时从组件内部获取，因为后端不再提供统计API
+        const statsData = ref([
+            {
+                title: "总文档数",
+                value: "0",
+                icon: "Document",
+                color: "#4285f4",
+                trend: "数据加载中...",
+                subtitle: "",
+            },
+            {
+                title: "本周新增",
+                value: "0",
+                icon: "Plus",
+                color: "#34a853",
+                trend: "数据加载中...",
+                subtitle: "",
+            },
+            {
+                title: "文档分类",
+                value: "0",
+                icon: "Grid",
+                color: "#ff9500",
+                trend: "数据加载中...",
+                subtitle: "",
+            },
+            {
+                title: "下载次数",
+                value: "0",
+                icon: "Download",
+                color: "#5856d6",
+                trend: "数据加载中...",
+                subtitle: "",
+            },
+        ]);
 
         const handleUploadDocument = () => {
             ElMessage.success("上传文档功能开发中...");
         };
 
-        const handleCategoryChange = (categoryId) => {
-            // 处理分类切换，可以传递给文档列表组件进行筛选
-            console.log("Selected category:", categoryId);
-            // 这里可以实现分类和列表的联动
+        const handleCategoryChange = (data) => {
+            // 处理分类切换，传递表名给文档列表组件
+            console.log("Selected category:", data);
+            documentsListRef.value?.handleCategoryChange(data);
         };
 
         return {
