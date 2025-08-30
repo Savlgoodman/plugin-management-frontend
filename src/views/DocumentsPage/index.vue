@@ -204,14 +204,21 @@ export default {
     grid-template-columns: 1fr 3fr;
     gap: 24px;
     align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden; /* 防止子元素撑开容器 */
 }
 
 .left-section {
     width: 100%;
+    min-width: 0; /* 允许收缩 */
 }
 
 .right-section {
     width: 100%;
+    min-width: 0; /* 允许收缩，防止内容撑开 */
+    max-width: 100%; /* 严格限制最大宽度 */
+    overflow: hidden; /* 防止内容溢出 */
 }
 
 /* 响应式设计 */

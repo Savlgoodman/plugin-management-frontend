@@ -12,14 +12,14 @@ import request from "../../../utils/request.js";
 export const importPluginFile = async (file) => {
     try {
         const formData = new FormData();
-        formData.append('file', file);
-        
+        formData.append("file", file);
+
         const response = await request.post("/plugin/import", formData, {
             headers: {
-                'Content-Type': 'multipart/form-data'
-            }
+                "Content-Type": "multipart/form-data",
+            },
         });
-        
+
         return {
             success: response.code === 200,
             data: response.data || {},
@@ -43,7 +43,7 @@ export const importPluginFile = async (file) => {
 export const importPluginJSON = async (pluginData) => {
     try {
         const response = await request.post("/plugin/import-json", pluginData);
-        
+
         return {
             success: response.code === 200,
             data: response.data || {},
@@ -239,6 +239,139 @@ export const stopPluginTask = async (executionId) => {
             success: false,
             data: null,
             message: error.message || "停止插件任务失败",
+        };
+    }
+};
+
+/**
+ * 获取插件参数详情
+ * @param {string} pluginId - 插件ID
+ * @returns {Promise<Object>} 插件参数数据
+ */
+export const fetchPluginParameters = async (pluginId) => {
+    try {
+        const response = await request.get(`/plugin/${pluginId}/parameters`);
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "获取插件参数成功",
+        };
+    } catch (error) {
+        console.error("获取插件参数失败:", error);
+        return {
+            success: false,
+            data: {},
+            message: error.message || "获取插件参数失败",
+        };
+    }
+};
+
+/**
+ * 修改插件参数
+ * @param {string} pluginId - 插件ID
+ * @param {Object} parameters - 要修改的参数对象
+ * @returns {Promise<Object>} 修改结果
+ */
+export const updatePluginParameters = async (pluginId, parameters) => {
+    try {
+        const response = await request.put(
+            `/plugin/${pluginId}/parameters`,
+            parameters
+        );
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "参数修改成功",
+        };
+    } catch (error) {
+        console.error("修改插件参数失败:", error);
+        return {
+            success: false,
+            data: {},
+            message: error.message || "修改插件参数失败",
+        };
+    }
+};
+
+/**
+ * 获取插件完整内容
+ * @param {string} pluginId - 插件ID
+ * @returns {Promise<Object>} 插件完整内容数据
+ */
+export const fetchPluginContent = async (pluginId) => {
+    try {
+        const response = await request.get(`/plugin/${pluginId}/content`);
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "获取插件内容成功",
+        };
+    } catch (error) {
+        console.error("获取插件内容失败:", error);
+        return {
+            success: false,
+            data: {},
+            message: error.message || "获取插件内容失败",
+        };
+    }
+};
+
+/**
+ * 修改插件名称
+ * @param {string} pluginId - 插件ID
+ * @param {string} newName - 新的插件名称
+ * @param {string} documentName - 新的文档名称（可选）
+ * @returns {Promise<Object>} 修改结果
+ */
+export const updatePluginName = async (
+    pluginId,
+    newName,
+    documentName = null
+) => {
+    try {
+        const requestData = { name: newName };
+        if (documentName !== null && documentName !== undefined) {
+            requestData.document_name = documentName;
+        }
+
+        const response = await request.put(
+            `/plugin/${pluginId}/name`,
+            requestData
+        );
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "插件名称修改成功",
+        };
+    } catch (error) {
+        console.error("修改插件名称失败:", error);
+        return {
+            success: false,
+            data: {},
+            message: error.message || "修改插件名称失败",
+        };
+    }
+};
+
+/**
+ * 获取插件关联的文档信息
+ * @param {string} pluginId - 插件ID
+ * @returns {Promise<Object>} 插件文档信息
+ */
+export const fetchPluginDocument = async (pluginId) => {
+    try {
+        const response = await request.get(`/plugin/${pluginId}/document`);
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "获取插件文档信息成功",
+        };
+    } catch (error) {
+        console.error("获取插件文档信息失败:", error);
+        return {
+            success: false,
+            data: {},
+            message: error.message || "获取插件文档信息失败",
         };
     }
 };

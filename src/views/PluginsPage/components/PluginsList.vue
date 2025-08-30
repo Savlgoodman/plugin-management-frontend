@@ -30,6 +30,14 @@
             @success="handleUploadSuccess"
         />
 
+        <!-- 插件参数编辑模态框 -->
+        <PluginParameterModal
+            v-model="parameterDialog"
+            :plugin-info="currentEditPlugin"
+            @save-success="handleParameterSaveSuccess"
+            @name-updated="handlePluginNameUpdated"
+        />
+
         <template #header>
             <div class="card-header">
                 <div class="header-left">
@@ -149,12 +157,12 @@
                             </el-button>
                         </el-tooltip>
 
-                        <el-tooltip content="编辑名称" placement="top">
+                        <el-tooltip content="编辑参数" placement="top">
                             <el-button
                                 size="small"
                                 type="primary"
                                 circle
-                                @click="handleEditName(row)"
+                                @click="handleEditParameters(row)"
                                 class="action-btn"
                             >
                                 <el-icon><Edit /></el-icon>
@@ -206,6 +214,7 @@ import {
 import PluginDetailModal from "./PluginDetailModal.vue";
 import PluginSettingModal from "./PluginSettingModal.vue";
 import PluginUploadModal from "./PluginUploadModal.vue";
+import PluginParameterModal from "./PluginParameterModal.vue";
 
 export default {
     name: "PluginsList",
@@ -213,6 +222,7 @@ export default {
         PluginDetailModal,
         PluginSettingModal,
         PluginUploadModal,
+        PluginParameterModal,
     },
     setup() {
         const searchText = ref("");
@@ -301,6 +311,10 @@ export default {
         // 上传对话框状态
         const uploadDialog = ref(false);
 
+        // 参数编辑对话框状态
+        const parameterDialog = ref(false);
+        const currentEditPlugin = ref({});
+
         const handleAddPlugin = () => {
             uploadDialog.value = true;
         };
@@ -370,8 +384,39 @@ export default {
             }
         };
 
-        const handleEditName = (row) => {
-            ElMessage.info(`编辑插件名称: ${row.name}`);
+        // 编辑插件参数
+        const handleEditParameters = (row) => {
+            currentEditPlugin.value = row;
+            parameterDialog.value = true;
+        };
+
+        // 处理参数保存成功
+        const handleParameterSaveSuccess = (data) => {
+            ElMessage.success("参数保存成功");
+            // 可以在这里添加刷新插件列表等逻辑
+        };
+
+        // 处理插件名称更新
+        const handlePluginNameUpdated = (data) => {
+            // 构建成功消息
+            let message = `插件名称已更新：${data.oldName} → ${data.newName}`;
+            if (data.oldDocumentName !== data.newDocumentName) {
+                message += `\n文档名称已更新：${data.oldDocumentName} → ${data.newDocumentName}`;
+            }
+            ElMessage.success(message);
+
+            // 更新本地插件列表中的名称
+            const pluginIndex = allPluginsData.value.findIndex(
+                (p) => p.id === data.id
+            );
+            if (pluginIndex !== -1) {
+                allPluginsData.value[pluginIndex].name = data.newName;
+            }
+
+            // 如果当前编辑的插件就是被更新的插件，也更新其名称
+            if (currentEditPlugin.value.id === data.id) {
+                currentEditPlugin.value.name = data.newName;
+            }
         };
 
         // 设置相关变量
@@ -558,7 +603,7 @@ export default {
             handleAddPlugin,
             handleRefresh,
             handleViewDetails,
-            handleEditName,
+            handleEditParameters,
             handleSettings,
             // 对话框相关
             pluginDetailDialog,
@@ -574,6 +619,11 @@ export default {
             // 上传相关
             uploadDialog,
             handleUploadSuccess,
+            // 参数编辑相关
+            parameterDialog,
+            currentEditPlugin,
+            handleParameterSaveSuccess,
+            handlePluginNameUpdated,
             // 函数相关
             refreshDetailLogs,
             refreshStatus,
