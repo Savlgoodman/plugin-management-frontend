@@ -54,6 +54,9 @@
                 </el-button>
             </div>
         </div>
+
+        <!-- 活跃任务模态框 -->
+        <ActiveTasksModal v-model="showActiveTasksModal" />
     </div>
 </template>
 
@@ -61,11 +64,16 @@
 import { ref, computed } from "vue";
 import { ElMessage } from "element-plus";
 import { getPluginStatus } from "../api/plugins.js";
+import ActiveTasksModal from "./ActiveTasksModal.vue";
 
 export default {
     name: "PluginStatusChart",
+    components: {
+        ActiveTasksModal,
+    },
     setup() {
         const statusData = ref([]);
+        const showActiveTasksModal = ref(false);
 
         const totalCount = computed(() => {
             return statusData.value.reduce((sum, item) => sum + item.value, 0);
@@ -83,15 +91,18 @@ export default {
 
         const quickActions = ref([
             {
-                name: "一键检查所有插件",
+                name: "查看活跃任务",
                 type: "primary",
-                icon: "Refresh",
-                action: "refresh",
+                icon: "View",
+                action: "viewActiveTasks",
             },
         ]);
 
         const handleQuickAction = (action) => {
             switch (action.action) {
+                case "viewActiveTasks":
+                    showActiveTasksModal.value = true;
+                    break;
                 case "refresh":
                     ElMessage.info("正在检查所有插件状态...");
                     loadData();
@@ -108,6 +119,7 @@ export default {
             statusData,
             totalCount,
             quickActions,
+            showActiveTasksModal,
             handleQuickAction,
         };
     },

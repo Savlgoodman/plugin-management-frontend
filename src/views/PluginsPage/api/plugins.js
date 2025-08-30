@@ -376,6 +376,50 @@ export const fetchPluginDocument = async (pluginId) => {
     }
 };
 
+/**
+ * 获取所有活跃任务信息
+ * @returns {Promise<Object>} 活跃任务数据
+ */
+export const fetchActiveTasks = async () => {
+    try {
+        const response = await request.get("/plugin/active");
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "获取活跃任务成功",
+        };
+    } catch (error) {
+        console.error("获取活跃任务失败:", error);
+        return {
+            success: false,
+            data: {},
+            message: error.message || "获取活跃任务失败",
+        };
+    }
+};
+
+/**
+ * 清理所有死亡任务
+ * @returns {Promise<Object>} 清理结果
+ */
+export const cleanupDeadTasks = async () => {
+    try {
+        const response = await request.post("/plugin/cleanup");
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "清理死亡任务成功",
+        };
+    } catch (error) {
+        console.error("清理死亡任务失败:", error);
+        return {
+            success: false,
+            data: {},
+            message: error.message || "清理死亡任务失败",
+        };
+    }
+};
+
 // ===========================================
 // 兼容旧版本API (保持向后兼容)
 // ===========================================
