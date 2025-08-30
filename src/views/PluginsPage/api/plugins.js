@@ -5,6 +5,61 @@ import request from "../../../utils/request.js";
 // ===========================================
 
 /**
+ * 导入插件文件
+ * @param {File} file - 插件配置文件 (JSON格式)
+ * @returns {Promise<Object>} 导入结果
+ */
+export const importPluginFile = async (file) => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await request.post("/plugin/import", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "导入成功",
+        };
+    } catch (error) {
+        console.error("导入插件文件失败:", error);
+        return {
+            success: false,
+            data: null,
+            message: error.message || "导入插件文件失败",
+        };
+    }
+};
+
+/**
+ * 通过JSON数据导入插件
+ * @param {Object} pluginData - 插件配置数据
+ * @returns {Promise<Object>} 导入结果
+ */
+export const importPluginJSON = async (pluginData) => {
+    try {
+        const response = await request.post("/plugin/import-json", pluginData);
+        
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "导入成功",
+        };
+    } catch (error) {
+        console.error("导入插件JSON失败:", error);
+        return {
+            success: false,
+            data: null,
+            message: error.message || "导入插件JSON失败",
+        };
+    }
+};
+
+/**
  * 获取插件列表
  * @returns {Promise<Object>} 插件列表数据
  */

@@ -24,6 +24,12 @@
             @refresh-logs="refreshSettingLogs"
         />
 
+        <!-- 插件上传模态框 -->
+        <PluginUploadModal
+            v-model="uploadDialog"
+            @success="handleUploadSuccess"
+        />
+
         <template #header>
             <div class="card-header">
                 <div class="header-left">
@@ -199,12 +205,14 @@ import {
 } from "../api/plugins.js";
 import PluginDetailModal from "./PluginDetailModal.vue";
 import PluginSettingModal from "./PluginSettingModal.vue";
+import PluginUploadModal from "./PluginUploadModal.vue";
 
 export default {
     name: "PluginsList",
     components: {
         PluginDetailModal,
         PluginSettingModal,
+        PluginUploadModal,
     },
     setup() {
         const searchText = ref("");
@@ -290,8 +298,18 @@ export default {
             selectedPlugins.value = selection;
         };
 
+        // 上传对话框状态
+        const uploadDialog = ref(false);
+
         const handleAddPlugin = () => {
-            ElMessage.success("添加插件功能开发中...");
+            uploadDialog.value = true;
+        };
+
+        // 处理上传成功
+        const handleUploadSuccess = async (data) => {
+            ElMessage.success(`插件导入成功，ID: ${data.plugin_id}`);
+            // 刷新插件列表
+            await loadData();
         };
 
         const handleRefresh = async () => {
@@ -553,6 +571,9 @@ export default {
             executionId,
             currentStatus,
             statusLoading,
+            // 上传相关
+            uploadDialog,
+            handleUploadSuccess,
             // 函数相关
             refreshDetailLogs,
             refreshStatus,
@@ -571,6 +592,9 @@ export default {
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
+    /* 确保不影响模态框的层级 */
+    position: relative;
+    z-index: 1;
 }
 
 .card-header {
