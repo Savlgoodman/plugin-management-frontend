@@ -7,13 +7,15 @@
                     <span class="header-title">文档分类</span>
                 </div>
                 <div class="header-right">
-                    <el-tooltip content="刷新分类" placement="top">
+                    <el-tooltip content="刷新分类计数" placement="top">
                         <el-button
                             text
                             @click="handleRefresh"
+                            :loading="refreshing"
+                            :disabled="refreshing"
                             class="refresh-btn"
                         >
-                            <el-icon><Refresh /></el-icon>
+                            <el-icon v-if="!refreshing"><Refresh /></el-icon>
                         </el-button>
                     </el-tooltip>
                 </div>
@@ -81,7 +83,7 @@
 <script>
 import { ref, onMounted, watch } from "vue";
 import { ElMessage } from "element-plus";
-import { getCategories } from "../api/documents";
+import { getCategories, updateDocumentCounts } from "../api/documents";
 
 export default {
     name: "DocumentCategories",
@@ -89,7 +91,8 @@ export default {
     setup(props, { emit }) {
         const selectedCategory = ref("all");
         const categories = ref([]);
-        
+        const refreshing = ref(false);
+
         // 从 API 获取分类数据
         const loadCategories = async () => {
             try {
@@ -107,20 +110,22 @@ export default {
 
         const handleCategorySelect = async (categoryId) => {
             selectedCategory.value = categoryId;
-            
+
             // 如果不是"全部分类"，获取该分类的表名
             if (categoryId !== "all") {
-                const category = categories.value.find(c => c.id === categoryId);
+                const category = categories.value.find(
+                    (c) => c.id === categoryId
+                );
                 if (category) {
                     selectedCategoryTable.value = category.table_name; // 使用table_name作为表名
                 }
             } else {
                 selectedCategoryTable.value = "";
             }
-            
+
             emit("category-change", {
                 categoryId: categoryId,
-                tableName: selectedCategoryTable.value
+                tableName: selectedCategoryTable.value,
             });
 
             const categoryName =
@@ -131,22 +136,55 @@ export default {
             ElMessage.success(`已切换到：${categoryName}`);
         };
 
-        const handleRefresh = () => {
-            ElMessage.success("分类数据已刷新");
-            // 这里可以添加实际的刷新逻辑
+        const handleRefresh = async () => {
+            if (refreshing.value) return; // 防止重复点击
+
+            try {
+                refreshing.value = true;
+
+                // 调用更新计数接口
+                const result = await updateDocumentCounts();
+
+                if (result.taskStarted) {
+                    ElMessage.success(result.message);
+
+                    // 等待一段时间后刷新分类数据
+                    setTimeout(async () => {
+                        try {
+                            await loadCategories();
+                            ElMessage.success("分类数据已更新");
+                        } catch (error) {
+                            console.error("刷新分类数据失败:", error);
+                            ElMessage.warning(
+                                "计数更新成功，但刷新分类数据失败"
+                            );
+                        } finally {
+                            refreshing.value = false;
+                        }
+                    }, 2000); // 等待2秒后刷新，给后台处理时间
+                } else {
+                    ElMessage.warning("更新任务启动失败");
+                    refreshing.value = false;
+                }
+            } catch (error) {
+                console.error("刷新失败:", error);
+                ElMessage.error("刷新失败: " + error.message);
+                refreshing.value = false;
+            }
         };
 
         onMounted(() => {
             // 初始化时通知父组件当前选中的分类
             emit("category-change", {
                 categoryId: selectedCategory.value,
-                tableName: selectedCategoryTable.value
+                tableName: selectedCategoryTable.value,
             });
         });
 
         return {
             selectedCategory,
             categories,
+            refreshing,
             handleCategorySelect,
             handleRefresh,
         };

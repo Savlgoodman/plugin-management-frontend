@@ -249,3 +249,24 @@ export const exportDocuments = async (filters = {}) => {
         throw new Error("导出文档失败");
     }
 };
+
+/**
+ * 异步更新所有文档计数
+ * 批量更新所有文档记录的计数，不阻塞主线程
+ * @returns {Promise<Object>} 更新任务信息
+ */
+export const updateDocumentCounts = async () => {
+    try {
+        const response = await request.post("/doc/update-counts");
+
+        return {
+            taskStarted: response.data?.task_started || false,
+            isAsync: response.data?.is_async || false,
+            startTime: response.data?.start_time || null,
+            message: response.message || "文档计数更新任务已启动",
+        };
+    } catch (error) {
+        console.error("更新文档计数失败:", error);
+        throw new Error("更新文档计数失败");
+    }
+};
