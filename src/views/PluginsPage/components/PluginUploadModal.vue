@@ -1,7 +1,7 @@
 <template>
     <el-dialog
         v-model="visible"
-        title="添加插件"
+        :title="mode === 'update' ? '更新插件配置' : '添加插件'"
         :width="600"
         :before-close="handleClose"
         :append-to-body="true"
@@ -28,7 +28,7 @@
                             ><UploadFilled
                         /></el-icon>
                         <div class="el-upload__text">
-                            将JSON文件拖到此处，或<em>点击上传</em>
+                            {{ uploadTip }}
                         </div>
                         <template #tip>
                             <div class="el-upload__tip">
@@ -76,9 +76,12 @@
                         <el-form-item label="插件名称" prop="name" required>
                             <el-input
                                 v-model="jsonForm.name"
-                                placeholder="请输入插件名称"
+                                :placeholder="
+                                    isUpdateMode ? '插件名称' : '请输入插件名称'
+                                "
                                 maxlength="255"
                                 show-word-limit
+                                :disabled="isUpdateMode"
                             />
                         </el-form-item>
 
@@ -94,9 +97,12 @@
                         <el-form-item label="保存名称" prop="saveName" required>
                             <el-input
                                 v-model="jsonForm.saveName"
-                                placeholder="请输入保存名称"
+                                :placeholder="
+                                    isUpdateMode ? '保存名称' : '请输入保存名称'
+                                "
                                 maxlength="255"
                                 show-word-limit
+                                :disabled="isUpdateMode"
                             />
                         </el-form-item>
 
@@ -123,7 +129,7 @@
                     :loading="uploading"
                     @click="handleSubmit"
                 >
-                    {{ uploading ? "导入中..." : "导入插件" }}
+                    {{ submitButtonText }}
                 </el-button>
             </div>
         </template>
@@ -133,7 +139,12 @@
 <script>
 import { ref, reactive, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
-import { importPluginFile, importPluginJSON } from "../api/plugins.js";
+import {
+    importPluginFile,
+    importPluginJSON,
+    updatePluginFile,
+    updatePluginJSON,
+} from "../api/plugins.js";
 
 export default {
     name: "PluginUploadModal",
@@ -141,6 +152,18 @@ export default {
         modelValue: {
             type: Boolean,
             default: false,
+        },
+        mode: {
+            type: String,
+            default: "import", // "import" 或 "update"
+        },
+        pluginId: {
+            type: String,
+            default: "",
+        },
+        pluginName: {
+            type: String,
+            default: "",
         },
     },
     emits: ["update:modelValue", "success"],
@@ -157,6 +180,23 @@ export default {
             get: () => props.modelValue,
             set: (value) => emit("update:modelValue", value),
         });
+
+        // 根据模式计算显示文本
+        const isUpdateMode = computed(() => props.mode === "update");
+        const submitButtonText = computed(() =>
+            isUpdateMode.value
+                ? uploading.value
+                    ? "更新中..."
+                    : "更新配置"
+                : uploading.value
+                ? "导入中..."
+                : "导入插件"
+        );
+        const uploadTip = computed(() =>
+            isUpdateMode.value
+                ? "将JSON配置文件拖到此处，或点击上传"
+                : "将JSON文件拖到此处，或点击上传"
+        );
 
         // JSON表单数据
         const jsonForm = reactive({
@@ -211,6 +251,13 @@ export default {
         watch(visible, (newVal) => {
             if (!newVal) {
                 resetForm();
+            } else if (newVal && isUpdateMode.value && props.pluginName) {
+                // 更新模式下预填充插件名称
+                jsonForm.name = props.pluginName;
+                jsonForm.saveName = props.pluginName.replace(
+                    /[^a-zA-Z0-9_-]/g,
+                    "_"
+                );
             }
         });
 
@@ -291,7 +338,16 @@ export default {
                         return;
                     }
 
-                    result = await importPluginFile(selectedFile.value);
+                    if (isUpdateMode.value) {
+                        // 更新模式
+                        result = await updatePluginFile(
+                            props.pluginId,
+                            selectedFile.value
+                        );
+                    } else {
+                        // 导入模式
+                        result = await importPluginFile(selectedFile.value);
+                    }
                 } else {
                     // JSON数据方式
                     const isValid = await jsonFormRef.value
@@ -301,12 +357,23 @@ export default {
                         return;
                     }
 
-                    result = await importPluginJSON({
-                        name: jsonForm.name,
-                        url: jsonForm.url,
-                        saveName: jsonForm.saveName,
-                        description: jsonForm.description || undefined,
-                    });
+                    if (isUpdateMode.value) {
+                        // 更新模式
+                        result = await updatePluginJSON(props.pluginId, {
+                            name: jsonForm.name,
+                            url: jsonForm.url,
+                            saveName: jsonForm.saveName,
+                            description: jsonForm.description || undefined,
+                        });
+                    } else {
+                        // 导入模式
+                        result = await importPluginJSON({
+                            name: jsonForm.name,
+                            url: jsonForm.url,
+                            saveName: jsonForm.saveName,
+                            description: jsonForm.description || undefined,
+                        });
+                    }
                 }
 
                 if (result.success) {
@@ -317,8 +384,15 @@ export default {
                     ElMessage.error(result.message);
                 }
             } catch (error) {
-                console.error("导入插件失败:", error);
-                ElMessage.error("导入插件失败，请重试");
+                console.error(
+                    isUpdateMode.value ? "更新插件配置失败:" : "导入插件失败:",
+                    error
+                );
+                ElMessage.error(
+                    isUpdateMode.value
+                        ? "更新插件配置失败，请重试"
+                        : "导入插件失败，请重试"
+                );
             } finally {
                 uploading.value = false;
             }
@@ -349,6 +423,9 @@ export default {
             formatDate,
             handleSubmit,
             handleClose,
+            submitButtonText,
+            uploadTip,
+            isUpdateMode,
         };
     },
 };

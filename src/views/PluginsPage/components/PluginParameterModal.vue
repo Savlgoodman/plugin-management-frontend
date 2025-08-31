@@ -12,6 +12,17 @@
         <PluginContentModal
             v-model="contentModalVisible"
             :plugin-data="pluginContent"
+            :plugin-id="pluginInfo.id"
+            @config-updated="handleConfigUpdated"
+        />
+
+        <!-- 更新配置文件模态框 -->
+        <PluginUploadModal
+            v-model="configUpdateModalVisible"
+            mode="update"
+            :plugin-id="pluginInfo.id"
+            :plugin-name="pluginInfo.name"
+            @success="handleConfigUpdateSuccess"
         />
 
         <!-- 修改名称对话框 -->
@@ -97,6 +108,15 @@
                     </div>
                 </div>
                 <div class="header-right">
+                    <el-button
+                        type="success"
+                        plain
+                        @click="handleUpdateConfig"
+                        class="update-config-btn"
+                    >
+                        <el-icon><Upload /></el-icon>
+                        更新配置文件
+                    </el-button>
                     <el-button
                         type="warning"
                         plain
@@ -290,18 +310,32 @@
 import { ref, computed, watch, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import {
+    Setting,
+    Edit,
+    Document,
+    Download,
+    Upload,
+    InfoFilled,
+    Check,
+    RefreshLeft,
+    UploadFilled,
+} from "@element-plus/icons-vue";
+import {
     fetchPluginParameters,
     updatePluginParameters,
     fetchPluginContent,
     updatePluginName,
     fetchPluginDocument,
+    updatePluginFile,
 } from "../api/plugins.js";
 import PluginContentModal from "./PluginContentModal.vue";
+import PluginUploadModal from "./PluginUploadModal.vue";
 
 export default {
     name: "PluginParameterModal",
     components: {
         PluginContentModal,
+        PluginUploadModal,
     },
     props: {
         modelValue: {
@@ -338,6 +372,9 @@ export default {
         const currentDocumentName = ref("");
         const nameSaving = ref(false);
         const documentLoading = ref(false);
+
+        // 更新配置文件模态框状态
+        const configUpdateModalVisible = ref(false);
 
         // 计算是否有修改
         const hasChanges = computed(() => {
@@ -440,6 +477,24 @@ export default {
             }
 
             nameEditDialog.value = true;
+        };
+
+        // 更新配置文件
+        const handleUpdateConfig = () => {
+            configUpdateModalVisible.value = true;
+        };
+
+        // 处理配置更新成功
+        const handleConfigUpdateSuccess = (data) => {
+            ElMessage.success("配置文件更新成功");
+            // 通知父组件配置已更新
+            emit("save-success", data);
+        };
+
+        // 处理配置更新
+        const handleConfigUpdated = (updatedConfig) => {
+            // 通知父组件配置已更新
+            emit("save-success", updatedConfig);
         };
 
         // 保存新名称
@@ -613,12 +668,17 @@ export default {
             nameSaving,
             documentLoading,
             hasNameChanges,
+            // 更新配置文件相关
+            configUpdateModalVisible,
             handleEditName,
             handleSaveName,
             handleViewContent,
             handleSave,
             handleReset,
             handleCancel,
+            handleUpdateConfig,
+            handleConfigUpdateSuccess,
+            handleConfigUpdated,
         };
     },
 };
@@ -663,6 +723,10 @@ export default {
 
 .edit-name-btn {
     margin-right: 4px;
+}
+
+.update-config-btn {
+    margin-right: 8px;
 }
 
 .header-icon {

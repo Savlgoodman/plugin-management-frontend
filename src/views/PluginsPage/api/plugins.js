@@ -787,3 +787,67 @@ export const getDocumentList = (params = {}) => {
         }, 300);
     });
 };
+
+/**
+ * 通过文件更新插件配置
+ * @param {string} pluginId - 插件ID
+ * @param {File} file - 插件配置文件 (JSON格式)
+ * @returns {Promise<Object>} 更新结果
+ */
+export const updatePluginFile = async (pluginId, file) => {
+    try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await request.post(
+            `/plugin/update-file?plugin_id=${pluginId}`,
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "插件配置更新成功",
+        };
+    } catch (error) {
+        console.error("更新插件配置文件失败:", error);
+        return {
+            success: false,
+            data: null,
+            message: error.message || "更新插件配置文件失败",
+        };
+    }
+};
+
+/**
+ * 通过JSON数据更新插件配置
+ * @param {string} pluginId - 插件ID
+ * @param {Object} pluginData - 完整的插件配置数据
+ * @returns {Promise<Object>} 更新结果
+ */
+export const updatePluginJSON = async (pluginId, pluginData) => {
+    try {
+        const response = await request.post(
+            `/plugin/update-json?plugin_id=${pluginId}`,
+            pluginData
+        );
+
+        return {
+            success: response.code === 200,
+            data: response.data || {},
+            message: response.message || "插件配置更新成功",
+        };
+    } catch (error) {
+        console.error("更新插件JSON配置失败:", error);
+        return {
+            success: false,
+            data: null,
+            message: error.message || "更新插件JSON配置失败",
+        };
+    }
+};
