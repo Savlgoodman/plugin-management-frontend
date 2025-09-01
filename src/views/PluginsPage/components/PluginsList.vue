@@ -242,7 +242,8 @@ export default {
             try {
                 const response = await fetchPluginsList();
                 if (response.success) {
-                    allPluginsData.value = response.data;
+                    // 将数据按ID倒序排列（最新的在前面）
+                    allPluginsData.value = response.data.sort((a, b) => b.id - a.id);
                 } else {
                     ElMessage.error(response.message);
                 }
@@ -322,7 +323,7 @@ export default {
         // 处理上传成功
         const handleUploadSuccess = async (data) => {
             ElMessage.success(`插件导入成功，ID: ${data.plugin_id}`);
-            // 刷新插件列表
+            // 刷新插件列表，新上传的插件将显示在顶部
             await loadData();
         };
 

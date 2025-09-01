@@ -98,6 +98,11 @@ export default {
             try {
                 const data = await getCategories();
                 categories.value = data;
+                
+                // 自动选择第一个分类
+                if (data.length > 0 && selectedCategory.value === "all") {
+                    await handleCategorySelect(data[0].id);
+                }
             } catch (error) {
                 console.error("获取分类数据失败:", error);
             }
@@ -174,11 +179,13 @@ export default {
         };
 
         onMounted(() => {
-            // 初始化时通知父组件当前选中的分类
-            emit("category-change", {
-                categoryId: selectedCategory.value,
-                tableName: selectedCategoryTable.value,
-            });
+            // 如果没有分类数据，初始化时通知父组件当前选中的分类
+            if (categories.value.length === 0) {
+                emit("category-change", {
+                    categoryId: selectedCategory.value,
+                    tableName: selectedCategoryTable.value,
+                });
+            }
         });
 
         return {

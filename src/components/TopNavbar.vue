@@ -116,6 +116,11 @@ export default {
                 icon: "Document",
             },
             {
+                index: "files",
+                text: "文件管理",
+                icon: "Files",
+            },
+            {
                 index: "settings",
                 text: "系统设置",
                 icon: "Setting",
@@ -131,6 +136,7 @@ export default {
             const routeName = route.name;
             if (routeName === "plugins") return "plugins";
             if (routeName === "documents") return "documents";
+            if (routeName === "files") return "files";
             if (routeName === "settings") return "settings";
             if (routeName === "analytics") return "analytics";
             return "plugins";

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Layout from "../components/Layout.vue";
 import PluginsPage from "../views/PluginsPage/index.vue";
 import DocumentsPage from "../views/DocumentsPage/index.vue";
+import FilePage from "../views/FilePage/index.vue";
 import SettingsPage from "../views/SettingsPage/index.vue";
 import AnalyticsPage from "../views/AnalyticsPage/index.vue";
 import LoginPage from "../views/LoginPage/index.vue";
@@ -23,6 +24,12 @@ const routes = [
                 name: "documents",
                 component: DocumentsPage,
                 meta: { title: "文档管理" },
+            },
+            {
+                path: "files",
+                name: "files",
+                component: FilePage,
+                meta: { title: "文件管理" },
             },
             {
                 path: "settings",
@@ -52,9 +59,9 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    const token = localStorage.getItem('access-token');
-    if (to.name !== 'login' && !token) {
-        next({ name: 'login' });
+    const token = localStorage.getItem("access-token");
+    if (to.name !== "login" && !token) {
+        next({ name: "login" });
     } else {
         next();
     }

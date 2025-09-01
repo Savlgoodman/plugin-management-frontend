@@ -485,142 +485,79 @@ export const getDownloadToken = async (pluginId, zipFilename) => {
 };
 
 /**
- * 下载ZIP文件 - 支持长时间下载和进度显示
+ * 简单的ZIP文件下载方法 - 使用原有的短超时时间
  * @param {number} pluginId - 插件ID
  * @param {string} zipFilename - ZIP文件名
- * @param {Function} onProgress - 进度回调函数 (progressEvent) => {}
- * @param {number} retryCount - 重试次数，默认3次
  * @returns {Promise<Object>} 下载操作结果
  */
-export const downloadZip = async (pluginId, zipFilename, onProgress = null, retryCount = 3) => {
-    let lastError;
-    
-    for (let attempt = 1; attempt <= retryCount; attempt++) {
+export const downloadZip = async (pluginId, zipFilename) => {
+    try {
+        const response = await request.get(
+            `/file/download-zip/${pluginId}/${zipFilename}`,
+            {
+                responseType: "blob",
+            }
+        );
+
+        // 检查响应数据
+        if (!response.data || response.data.size === 0) {
+            throw new Error("下载的文件为空或无效");
+        }
+
+        console.log("下载文件大小:", response.data.size, "bytes");
+
+        let blob = response.data;
+        if (!blob.type || blob.type === "application/octet-stream") {
+            blob = new Blob([blob], { type: "application/zip" });
+        }
+
+        // 使用createObjectURL + 隐藏链接下载
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = zipFilename;
+        link.style.display = "none";
+
+        // 安全地添加到DOM并触发点击
         try {
-            console.log(`开始下载尝试 ${attempt}/${retryCount}: ${zipFilename}`);
-            
-            const response = await downloadRequest.get(
-                `/file/download-zip/${pluginId}/${zipFilename}`,
-                {
-                    responseType: "blob",
-                    onDownloadProgress: (progressEvent) => {
-                        if (onProgress && progressEvent.total) {
-                            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                            onProgress({
-                                loaded: progressEvent.loaded,
-                                total: progressEvent.total,
-                                progress: progress,
-                                attempt: attempt,
-                                maxAttempts: retryCount
-                            });
-                        }
-                    },
-                    // 添加额外的超时配置
-                    timeout: 300000, // 5分钟
+            document.body.appendChild(link);
+            link.click();
+
+            // 延迟清理，避免DOM操作冲突
+            setTimeout(() => {
+                try {
+                    if (document.body && document.body.contains(link)) {
+                        document.body.removeChild(link);
+                    }
+                    window.URL.revokeObjectURL(url);
+                } catch (cleanupError) {
+                    console.warn("清理下载资源时出错:", cleanupError);
                 }
-            );
+            }, 200);
 
-            // 检查响应数据
-            if (!response.data || response.data.size === 0) {
-                throw new Error("下载的文件为空或无效");
-            }
-
-            console.log(`尝试 ${attempt} 下载成功，文件大小:`, response.data.size, "bytes");
-
-            let blob = response.data;
-            if (!blob.type || blob.type === "application/octet-stream") {
-                blob = new Blob([blob], { type: "application/zip" });
-            }
-
-            // 使用createObjectURL + 隐藏链接下载
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = zipFilename;
-            link.style.display = "none";
-
-            // 安全地添加到DOM并触发点击
-            try {
-                document.body.appendChild(link);
-                link.click();
-
-                // 延迟清理，避免DOM操作冲突
-                setTimeout(() => {
-                    try {
-                        if (document.body && document.body.contains(link)) {
-                            document.body.removeChild(link);
-                        }
-                    } catch (cleanupError) {
-                        console.warn("清理下载链接时出错:", cleanupError);
-                    }
-
-                    try {
-                        window.URL.revokeObjectURL(url);
-                    } catch (revokeError) {
-                        console.warn("释放对象URL时出错:", revokeError);
-                    }
-                }, 200);
-
-                console.log("下载成功：使用createObjectURL");
-                return {
-                    success: true,
-                    message: "下载成功",
-                };
-            } catch (domError) {
+            return {
+                success: true,
+                message: "下载成功",
+            };
+        } catch (domError) {
             console.error("DOM操作失败:", domError);
-
             // 如果DOM操作失败，尝试直接设置location.href
-            try {
-                window.location.href = url;
+            window.location.href = url;
+            setTimeout(() => window.URL.revokeObjectURL(url), 1000);
 
-                // 延迟清理
-                setTimeout(() => {
-                    try {
-                        window.URL.revokeObjectURL(url);
-                    } catch (revokeError) {
-                        console.warn("释放对象URL时出错:", revokeError);
-                    }
-                }, 1000);
-
-                console.log("下载成功：使用location.href");
-                return {
-                    success: true,
-                    message: "下载已启动",
-                };
-            } catch (locationError) {
-                console.error("location.href方法也失败:", locationError);
-                throw new Error("所有下载方法都失败");
-            }
+            return {
+                success: true,
+                message: "下载已启动",
+            };
         }
     } catch (error) {
         console.error("下载ZIP文件失败:", error);
 
-        // 尝试解析错误信息
         let errorMessage = "下载ZIP文件失败";
-
-        if (error.response) {
-            if (error.response.data instanceof Blob) {
-                // 如果是blob错误响应，尝试解析JSON
-                try {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        try {
-                            const errorData = JSON.parse(reader.result);
-                            console.error("后端错误详情:", errorData);
-                        } catch (e) {
-                            console.error("无法解析错误响应:", reader.result);
-                        }
-                    };
-                    reader.readAsText(error.response.data);
-                } catch (e) {
-                    console.error("读取错误响应失败:", e);
-                }
-            } else {
-                errorMessage =
-                    error.response.data?.detail ||
-                    error.response.data?.message ||
-                    errorMessage;
-            }
+        if (error.response?.status === 404) {
+            errorMessage = "ZIP文件不存在或已过期";
+        } else if (error.response?.status === 403) {
+            errorMessage = "没有权限下载该文件";
         } else if (error.message) {
             errorMessage = error.message;
         }
@@ -634,31 +571,41 @@ export const downloadZip = async (pluginId, zipFilename, onProgress = null, retr
 
 /**
  * 支持进度显示和重试的ZIP文件下载方法
- * @param {number} pluginId - 插件ID  
+ * @param {number} pluginId - 插件ID
  * @param {string} zipFilename - ZIP文件名
  * @param {Function} onProgress - 进度回调函数
  * @param {number} retryCount - 重试次数
  */
-export const downloadZipWithProgress = async (pluginId, zipFilename, onProgress = null, retryCount = 3) => {
+export const downloadZipWithProgress = async (
+    pluginId,
+    zipFilename,
+    onProgress = null,
+    retryCount = 3
+) => {
     let lastError;
-    
+
     for (let attempt = 1; attempt <= retryCount; attempt++) {
         try {
-            console.log(`开始下载尝试 ${attempt}/${retryCount}: ${zipFilename}`);
-            
+            console.log(
+                `开始下载尝试 ${attempt}/${retryCount}: ${zipFilename}`
+            );
+
             const response = await downloadRequest.get(
                 `/file/download-zip/${pluginId}/${zipFilename}`,
                 {
                     responseType: "blob",
                     onDownloadProgress: (progressEvent) => {
                         if (onProgress && progressEvent.total) {
-                            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            const progress = Math.round(
+                                (progressEvent.loaded * 100) /
+                                    progressEvent.total
+                            );
                             onProgress({
                                 loaded: progressEvent.loaded,
                                 total: progressEvent.total,
                                 progress: progress,
                                 attempt: attempt,
-                                maxAttempts: retryCount
+                                maxAttempts: retryCount,
                             });
                         }
                     },
@@ -671,7 +618,11 @@ export const downloadZipWithProgress = async (pluginId, zipFilename, onProgress 
                 throw new Error("下载的文件为空或无效");
             }
 
-            console.log(`尝试 ${attempt} 下载成功，文件大小:`, response.data.size, "bytes");
+            console.log(
+                `尝试 ${attempt} 下载成功，文件大小:`,
+                response.data.size,
+                "bytes"
+            );
 
             let blob = response.data;
             if (!blob.type || blob.type === "application/octet-stream") {
@@ -711,7 +662,7 @@ export const downloadZipWithProgress = async (pluginId, zipFilename, onProgress 
                 // 如果DOM操作失败，尝试直接设置location.href
                 window.location.href = url;
                 setTimeout(() => window.URL.revokeObjectURL(url), 1000);
-                
+
                 return {
                     success: true,
                     message: `下载已启动 (尝试 ${attempt}/${retryCount})`,
@@ -720,21 +671,26 @@ export const downloadZipWithProgress = async (pluginId, zipFilename, onProgress 
         } catch (error) {
             lastError = error;
             console.error(`下载尝试 ${attempt} 失败:`, error);
-            
+
             // 如果不是最后一次尝试，等待一段时间后重试
             if (attempt < retryCount) {
                 const waitTime = attempt * 2000; // 递增等待时间：2秒、4秒、6秒...
-                console.log(`等待 ${waitTime}ms 后进行第 ${attempt + 1} 次尝试...`);
-                await new Promise(resolve => setTimeout(resolve, waitTime));
+                console.log(
+                    `等待 ${waitTime}ms 后进行第 ${attempt + 1} 次尝试...`
+                );
+                await new Promise((resolve) => setTimeout(resolve, waitTime));
             }
         }
     }
-    
+
     // 所有尝试都失败了
     console.error(`所有 ${retryCount} 次下载尝试都失败了:`, lastError);
-    
+
     let errorMessage = "下载失败";
-    if (lastError?.code === "ECONNABORTED" || lastError?.message?.includes("timeout")) {
+    if (
+        lastError?.code === "ECONNABORTED" ||
+        lastError?.message?.includes("timeout")
+    ) {
         errorMessage = `下载超时 (已尝试 ${retryCount} 次)，文件较大请稍后重试`;
     } else if (lastError?.response?.status === 404) {
         errorMessage = "ZIP文件不存在或已过期";
@@ -766,4 +722,113 @@ export const downloadZipSimple = async (pluginId, zipFilename) => {
  */
 export const downloadZipInNewWindow = async (pluginId, zipFilename) => {
     return await downloadZip(pluginId, zipFilename);
+};
+
+/**
+ * 下载单个文件
+ * @param {number} pluginId - 插件ID
+ * @param {number} recordId - 记录ID
+ * @returns {Promise<Object>} 下载操作结果
+ */
+export const downloadSingleFile = async (pluginId, recordId) => {
+    try {
+        console.log(
+            `开始下载单个文件: pluginId=${pluginId}, recordId=${recordId}`
+        );
+
+        const response = await downloadRequest.get(
+            `/download-file/${pluginId}/${recordId}`,
+            {
+                responseType: "blob",
+                timeout: 300000, // 5分钟超时
+            }
+        );
+
+        // 检查响应数据
+        if (!response.data || response.data.size === 0) {
+            throw new Error("下载的文件为空或无效");
+        }
+
+        console.log("单个文件下载成功，文件大小:", response.data.size, "bytes");
+
+        // 从响应头获取文件名
+        let filename = "download";
+        const contentDisposition = response.headers["content-disposition"];
+        if (contentDisposition) {
+            const matches = contentDisposition.match(
+                /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+            );
+            if (matches && matches[1]) {
+                filename = matches[1].replace(/['"]/g, "");
+            }
+        }
+
+        // 创建 blob 对象
+        const blob = new Blob([response.data]);
+
+        // 使用createObjectURL + 隐藏链接下载
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.style.display = "none";
+
+        // 安全地添加到DOM并触发点击
+        try {
+            document.body.appendChild(link);
+            link.click();
+
+            // 延迟清理，避免DOM操作冲突
+            setTimeout(() => {
+                try {
+                    if (document.body && document.body.contains(link)) {
+                        document.body.removeChild(link);
+                    }
+                    window.URL.revokeObjectURL(url);
+                } catch (cleanupError) {
+                    console.warn("清理下载资源时出错:", cleanupError);
+                }
+            }, 200);
+
+            return {
+                success: true,
+                message: "文件下载成功",
+            };
+        } catch (domError) {
+            console.error("DOM操作失败:", domError);
+            // 如果DOM操作失败，尝试直接设置location.href
+            window.location.href = url;
+            setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+
+            return {
+                success: true,
+                message: "文件下载已启动",
+            };
+        }
+    } catch (error) {
+        console.error("下载单个文件失败:", error);
+
+        let errorMessage = "下载文件失败";
+        if (
+            error?.code === "ECONNABORTED" ||
+            error?.message?.includes("timeout")
+        ) {
+            errorMessage = "下载超时，文件较大请稍后重试";
+        } else if (error?.response?.status === 404) {
+            errorMessage = "文件不存在或已被删除";
+        } else if (error?.response?.status === 403) {
+            errorMessage = "没有权限下载该文件";
+        } else if (error?.response?.status >= 500) {
+            errorMessage = "服务器错误，请稍后重试";
+        } else if (error?.message?.includes("Network Error")) {
+            errorMessage = "网络连接失败，请检查网络连接";
+        } else if (error?.message) {
+            errorMessage = error.message;
+        }
+
+        return {
+            success: false,
+            message: errorMessage,
+        };
+    }
 };
