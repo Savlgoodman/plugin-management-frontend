@@ -112,12 +112,12 @@ export default {
             },
             {
                 index: "documents",
-                text: "文档管理",
+                text: "公文管理",
                 icon: "Document",
             },
             {
                 index: "files",
-                text: "文件管理",
+                text: "规范管理",
                 icon: "Files",
             },
             {

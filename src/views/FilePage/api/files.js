@@ -737,7 +737,7 @@ export const downloadSingleFile = async (pluginId, recordId) => {
         );
 
         const response = await downloadRequest.get(
-            `/download-file/${pluginId}/${recordId}`,
+            `/file/download-file/${pluginId}/${recordId}`,
             {
                 responseType: "blob",
                 timeout: 300000, // 5分钟超时
@@ -751,16 +751,51 @@ export const downloadSingleFile = async (pluginId, recordId) => {
 
         console.log("单个文件下载成功，文件大小:", response.data.size, "bytes");
 
-        // 从响应头获取文件名
+        // 从响应头获取文件名，正确处理中文编码
         let filename = "download";
         const contentDisposition = response.headers["content-disposition"];
+
         if (contentDisposition) {
-            const matches = contentDisposition.match(
-                /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
-            );
-            if (matches && matches[1]) {
-                filename = matches[1].replace(/['"]/g, "");
+            try {
+                // 优先尝试解析 filename*=UTF-8''... 格式（RFC 6266）
+                const utf8Match = contentDisposition.match(
+                    /filename\*=UTF-8''([^;]+)/i
+                );
+                if (utf8Match && utf8Match[1]) {
+                    filename = decodeURIComponent(utf8Match[1]);
+                } else {
+                    // 尝试解析标准的 filename="..." 格式
+                    const standardMatch = contentDisposition.match(
+                        /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+                    );
+                    if (standardMatch && standardMatch[1]) {
+                        let rawFilename = standardMatch[1].replace(/['"]/g, "");
+
+                        // 如果包含URL编码，进行解码
+                        if (rawFilename.includes("%")) {
+                            try {
+                                filename = decodeURIComponent(rawFilename);
+                            } catch (decodeError) {
+                                // 如果解码失败，尝试使用原始文件名
+                                filename = rawFilename;
+                            }
+                        } else {
+                            // 如果是中文但没有编码，可能需要从UTF-8转换
+                            filename = rawFilename;
+                        }
+                    }
+                }
+
+                console.log("解析的文件名:", filename);
+            } catch (parseError) {
+                console.warn("解析文件名失败:", parseError);
+                filename = `download_${Date.now()}`;
             }
+        }
+
+        // 如果仍然没有合适的文件名，使用时间戳
+        if (!filename || filename === "download") {
+            filename = `file_${Date.now()}`;
         }
 
         // 创建 blob 对象

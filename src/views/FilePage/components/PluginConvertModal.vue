@@ -341,7 +341,7 @@ export default {
                 console.log("获取到的字段:", columns);
 
                 if (Array.isArray(columns) && columns.length > 0) {
-                    tableColumns.value = columns;
+                tableColumns.value = columns;
                     ElMessage.success(`成功加载 ${columns.length} 个字段`);
                 } else {
                     tableColumns.value = [];

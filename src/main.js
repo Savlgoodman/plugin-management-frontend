@@ -4,6 +4,7 @@ import router from "./router";
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+import zhCn from "element-plus/es/locale/lang/zh-cn";
 import "./style.css";
 import { checkFontLoad } from "./utils/fontUtils.js";
 
@@ -15,7 +16,9 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 app.use(router);
-app.use(ElementPlus);
+app.use(ElementPlus, {
+    locale: zhCn,
+});
 
 // 字体加载检测
 document.addEventListener("DOMContentLoaded", () => {

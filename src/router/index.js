@@ -23,13 +23,13 @@ const routes = [
                 path: "documents",
                 name: "documents",
                 component: DocumentsPage,
-                meta: { title: "文档管理" },
+                meta: { title: "公文管理" },
             },
             {
                 path: "files",
                 name: "files",
                 component: FilePage,
-                meta: { title: "文件管理" },
+                meta: { title: "规范管理" },
             },
             {
                 path: "settings",

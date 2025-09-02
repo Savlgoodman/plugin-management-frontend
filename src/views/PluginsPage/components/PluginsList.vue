@@ -190,7 +190,7 @@
             <el-pagination
                 v-model:current-page="currentPage"
                 v-model:page-size="pageSize"
-                :page-sizes="[7, 14, 21, 35]"
+                :page-sizes="[10, 20, 30, 40]"
                 :total="totalPlugins"
                 layout="total, sizes, prev, pager, next, jumper"
                 background
@@ -228,7 +228,7 @@ export default {
         const searchText = ref("");
         const statusFilter = ref("");
         const currentPage = ref(1);
-        const pageSize = ref(7);
+        const pageSize = ref(10);
         const selectedPlugins = ref([]);
         const pluginsData = ref([]);
 
@@ -243,7 +243,9 @@ export default {
                 const response = await fetchPluginsList();
                 if (response.success) {
                     // 将数据按ID倒序排列（最新的在前面）
-                    allPluginsData.value = response.data.sort((a, b) => b.id - a.id);
+                    allPluginsData.value = response.data.sort(
+                        (a, b) => b.id - a.id
+                    );
                 } else {
                     ElMessage.error(response.message);
                 }

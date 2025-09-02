@@ -1,26 +1,6 @@
 <template>
     <div class="documents-page">
         <div class="page-container">
-            <!-- 页面标题 -->
-            <div class="page-header">
-                <div class="header-left">
-                    <div class="breadcrumb">
-                        <el-icon class="breadcrumb-icon"><Document /></el-icon>
-                        <span class="breadcrumb-item">文档管理</span>
-                    </div>
-                    <h1 class="page-title">文档管理中心</h1>
-                    <div class="page-subtitle">
-                        统一管理所有采集文档，支持分类查看和快速检索
-                    </div>
-                </div>
-                <div class="header-right">
-                    <el-button type="primary" @click="handleUploadDocument">
-                        <el-icon><Upload /></el-icon>
-                        上传文档
-                    </el-button>
-                </div>
-            </div>
-
             <!-- 数据展示卡片 -->
             <div class="stats-grid">
                 <StatsCard
@@ -107,10 +87,6 @@ export default {
             },
         ]);
 
-        const handleUploadDocument = () => {
-            ElMessage.success("上传文档功能开发中...");
-        };
-
         const handleCategoryChange = (data) => {
             // 处理分类切换，传递表名给文档列表组件
             console.log("Selected category:", data);
@@ -120,7 +96,6 @@ export default {
         return {
             documentsListRef,
             statsData,
-            handleUploadDocument,
             handleCategoryChange,
         };
     },
@@ -137,59 +112,6 @@ export default {
     max-width: 1400px;
     margin: 0 auto;
     padding: 24px;
-}
-
-.page-header {
-    margin-bottom: 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 24px;
-}
-
-.header-left {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    flex: 1;
-}
-
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #4285f4;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.breadcrumb-icon {
-    font-size: 16px;
-}
-
-.breadcrumb-item {
-    color: #4285f4;
-}
-
-.page-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #1f2329;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.page-subtitle {
-    font-size: 16px;
-    color: #86909c;
-    line-height: 1.5;
-    margin-top: 4px;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
 }
 
 .stats-grid {
@@ -242,21 +164,6 @@ export default {
 @media (max-width: 768px) {
     .page-container {
         padding: 16px;
-    }
-
-    .page-header {
-        margin-bottom: 24px;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-    }
-
-    .page-title {
-        font-size: 24px;
-    }
-
-    .page-subtitle {
-        font-size: 14px;
     }
 
     .stats-grid {

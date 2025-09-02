@@ -432,9 +432,9 @@ export default {
             try {
                 // 暂时只加载状态和日志，进度功能需重新设计
                 const [statusResult, logsResult] = await Promise.all([
-                    getDownloadStatus(pluginId),
-                    getDownloadLogs(pluginId, logLines.value),
-                ]);
+                        getDownloadStatus(pluginId),
+                        getDownloadLogs(pluginId, logLines.value),
+                    ]);
 
                 if (statusResult.success) {
                     taskStatus.value = statusResult.data;

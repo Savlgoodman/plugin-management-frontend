@@ -143,7 +143,7 @@
                 class="files-table"
                 @selection-change="handleSelectionChange"
                 v-loading="loading"
-                :show-overflow-tooltip="true"
+                :show-overflow-tooltip="false"
                 table-layout="fixed"
             >
                 <el-table-column type="selection" width="55" fixed="left" />
@@ -231,15 +231,17 @@
 
                 <el-table-column label="操作" width="100" fixed="right">
                     <template #default="{ row }">
-                        <el-button
-                            type="primary"
-                            size="small"
-                            text
-                            @click="handleSingleDownload(row)"
-                            :disabled="!row.download_url"
-                        >
-                            <el-icon><Download /></el-icon>
-                        </el-button>
+                        <el-tooltip content="下载文件" placement="top">
+                            <el-button
+                                type="primary"
+                                size="small"
+                                text
+                                @click="handleSingleDownload(row)"
+                                :disabled="!row._id"
+                            >
+                                <el-icon><Download /></el-icon>
+                            </el-button>
+                        </el-tooltip>
                     </template>
                 </el-table-column>
             </el-table>
@@ -334,6 +336,7 @@ import {
     downloadZipSimple,
     downloadZipInNewWindow,
     downloadZipWithProgress,
+    downloadSingleFile,
     resetFailedRecords,
 } from "../api/files";
 
@@ -515,11 +518,33 @@ export default {
         };
 
         // 处理单个文件下载
-        const handleSingleDownload = (row) => {
-            if (row.download_url) {
-                window.open(row.download_url, "_blank");
-            } else {
-                ElMessage.warning("该文件没有下载链接");
+        const handleSingleDownload = async (row) => {
+            if (!props.currentPlugin) {
+                ElMessage.warning("请先选择插件");
+                return;
+            }
+
+            if (!row._id) {
+                ElMessage.warning("文件记录ID缺失，无法下载");
+                return;
+            }
+
+            try {
+                ElMessage.info("开始下载文件...");
+
+                const downloadResult = await downloadSingleFile(
+                    props.currentPlugin.plugin_id,
+                    row._id
+                );
+
+                if (downloadResult.success) {
+                    ElMessage.success(downloadResult.message);
+                } else {
+                    ElMessage.error(downloadResult.message);
+                }
+            } catch (error) {
+                console.error("单个文件下载失败:", error);
+                ElMessage.error("文件下载失败");
             }
         };
 

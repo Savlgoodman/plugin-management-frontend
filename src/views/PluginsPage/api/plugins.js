@@ -669,7 +669,7 @@ export const getStatsData = () => {
             const mockStatsData_1 = [
                 {
                     title: "活跃插件",
-                    value: "16",
+                    value: "-",
                     icon: "Download",
                     color: "#4285f4",
                     trend: "全部正在运行",
@@ -677,7 +677,7 @@ export const getStatsData = () => {
                 },
                 {
                     title: "今日采集",
-                    value: "248",
+                    value: "-",
                     icon: "DataBoard",
                     color: "#34a853",
                     trend: "较昨日增长12%",
@@ -685,7 +685,7 @@ export const getStatsData = () => {
                 },
                 {
                     title: "文档数量",
-                    value: "1,296",
+                    value: "-",
                     icon: "Document",
                     color: "#4285f4",
                     trend: "已分类管理",
@@ -693,10 +693,10 @@ export const getStatsData = () => {
                 },
                 {
                     title: "采集状态",
-                    value: "100%",
+                    value: "-",
                     icon: "TrendCharts",
                     color: "#fbbc04",
-                    trend: "2个源略有故障",
+                    trend: "-个源略有故障",
                     subtitle: "",
                 },
             ];

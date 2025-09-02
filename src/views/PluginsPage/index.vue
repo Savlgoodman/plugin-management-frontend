@@ -1,26 +1,6 @@
 <template>
     <div class="plugins-page">
         <div class="page-container">
-            <!-- 页面标题 -->
-            <div class="page-header">
-                <div class="header-left">
-                    <div class="breadcrumb">
-                        <el-icon class="breadcrumb-icon"><Grid /></el-icon>
-                        <span class="breadcrumb-item">插件管理</span>
-                    </div>
-                    <h1 class="page-title">采集插件监控台</h1>
-                    <div class="page-subtitle">
-                        实时监控所有数据采集插件的运行状态和性能表现
-                    </div>
-                </div>
-                <div class="header-right">
-                    <el-button type="primary" @click="handleAddPlugin">
-                        <el-icon><Plus /></el-icon>
-                        添加新插件
-                    </el-button>
-                </div>
-            </div>
-
             <!-- 数据展示卡片 -->
             <div class="stats-grid">
                 <StatsCard
@@ -99,13 +79,8 @@ export default {
             statsData.value = res.data;
         });
 
-        const handleAddPlugin = () => {
-            ElMessage.success("添加新插件功能开发中...");
-        };
-
         return {
             statsData,
-            handleAddPlugin,
         };
     },
 };
@@ -121,59 +96,6 @@ export default {
     max-width: 1400px;
     margin: 0 auto;
     padding: 24px;
-}
-
-.page-header {
-    margin-bottom: 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 24px;
-}
-
-.header-left {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    flex: 1;
-}
-
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #4285f4;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.breadcrumb-icon {
-    font-size: 16px;
-}
-
-.breadcrumb-item {
-    color: #4285f4;
-}
-
-.page-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #1f2329;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.page-subtitle {
-    font-size: 16px;
-    color: #86909c;
-    line-height: 1.5;
-    margin-top: 4px;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
 }
 
 .stats-grid {
@@ -251,21 +173,6 @@ export default {
 @media (max-width: 768px) {
     .page-container {
         padding: 16px;
-    }
-
-    .page-header {
-        margin-bottom: 24px;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-    }
-
-    .page-title {
-        font-size: 24px;
-    }
-
-    .page-subtitle {
-        font-size: 14px;
     }
 
     .stats-grid {

@@ -81,24 +81,24 @@
         <!-- 操作按钮 -->
         <div class="action-buttons">
             <div class="action-btn-wrapper">
-                <el-button
-                    type="primary"
-                    @click="$emit('convert-plugin')"
+            <el-button
+                type="primary"
+                @click="$emit('convert-plugin')"
                     class="action-btn convert-btn"
-                >
-                    <el-icon><Plus /></el-icon>
+            >
+                <el-icon><Plus /></el-icon>
                     <span>转换插件</span>
-                </el-button>
+            </el-button>
             </div>
             <div class="action-btn-wrapper">
-                <el-button
-                    type="success"
-                    @click="$emit('manage-tasks')"
+            <el-button
+                type="success"
+                @click="$emit('manage-tasks')"
                     class="action-btn manage-btn"
-                >
-                    <el-icon><Setting /></el-icon>
+            >
+                <el-icon><Setting /></el-icon>
                     <span>任务管理</span>
-                </el-button>
+            </el-button>
             </div>
         </div>
     </el-card>

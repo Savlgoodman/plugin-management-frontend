@@ -98,7 +98,7 @@ export default {
             try {
                 const data = await getCategories();
                 categories.value = data;
-                
+
                 // 自动选择第一个分类
                 if (data.length > 0 && selectedCategory.value === "all") {
                     await handleCategorySelect(data[0].id);
@@ -132,13 +132,6 @@ export default {
                 categoryId: categoryId,
                 tableName: selectedCategoryTable.value,
             });
-
-            const categoryName =
-                categoryId === "all"
-                    ? "全部分类"
-                    : categories.value.find((c) => c.id === categoryId)?.name;
-
-            ElMessage.success(`已切换到：${categoryName}`);
         };
 
         const handleRefresh = async () => {
