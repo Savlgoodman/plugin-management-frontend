@@ -120,16 +120,16 @@ export default {
                 text: "规范管理",
                 icon: "Files",
             },
-            {
-                index: "settings",
-                text: "系统设置",
-                icon: "Setting",
-            },
-            {
-                index: "analytics",
-                text: "数据分析",
-                icon: "TrendCharts",
-            },
+            // {
+            //     index: "settings",
+            //     text: "系统设置",
+            //     icon: "Setting",
+            // },
+            // {
+            //     index: "analytics",
+            //     text: "数据分析",
+            //     icon: "TrendCharts",
+            // },
         ]);
 
         const activeIndex = computed(() => {

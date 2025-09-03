@@ -151,7 +151,7 @@
                 <el-table-column
                     label="文件名"
                     prop="filename"
-                    width="200"
+                    width="250"
                     fixed="left"
                 >
                     <template #default="{ row }">
@@ -173,13 +173,47 @@
                                     :content="row.filename"
                                     placement="top"
                                 >
-                                    <div class="file-name">
+                                    <div class="file-name file-name-multiline">
                                         {{ row.filename }}
                                     </div>
                                 </el-tooltip>
                                 <div class="file-type">{{ row.file_type }}</div>
                             </div>
                         </div>
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="文件大小" width="120" align="right">
+                    <template #default="{ row }">
+                        <span class="file-size">{{
+                            formatFileSize(row.size)
+                        }}</span>
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="文件路径" prop="file_path" width="200">
+                    <template #default="{ row }">
+                        <el-tooltip
+                            :content="row.file_path || '-'"
+                            placement="top"
+                        >
+                            <span class="file-path file-path-truncated">{{
+                                truncateText(row.file_path, 30) || "-"
+                            }}</span>
+                        </el-tooltip>
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="下载链接" width="250">
+                    <template #default="{ row }">
+                        <el-tooltip
+                            :content="row.download_url || '-'"
+                            placement="top"
+                        >
+                            <span class="download-url download-url-truncated">{{
+                                truncateText(row.download_url, 40) || "-"
+                            }}</span>
+                        </el-tooltip>
                     </template>
                 </el-table-column>
 
@@ -194,38 +228,6 @@
                                 (row.is_download === 1 ? "已下载" : "未下载")
                             }}
                         </el-tag>
-                    </template>
-                </el-table-column>
-
-                <el-table-column label="文件大小" width="120" align="right">
-                    <template #default="{ row }">
-                        <span class="file-size">{{
-                            formatFileSize(row.size)
-                        }}</span>
-                    </template>
-                </el-table-column>
-
-                <el-table-column
-                    label="文件路径"
-                    prop="file_path"
-                    min-width="200"
-                >
-                    <template #default="{ row }">
-                        <el-tooltip :content="row.file_path" placement="top">
-                            <span class="file-path">{{
-                                row.file_path || "-"
-                            }}</span>
-                        </el-tooltip>
-                    </template>
-                </el-table-column>
-
-                <el-table-column label="下载链接" min-width="250">
-                    <template #default="{ row }">
-                        <el-tooltip :content="row.download_url" placement="top">
-                            <span class="download-url">{{
-                                truncateUrl(row.download_url)
-                            }}</span>
-                        </el-tooltip>
                     </template>
                 </el-table-column>
 
@@ -844,7 +846,15 @@ export default {
             return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB";
         };
 
-        // 截断URL显示
+        // 截断文本显示（通用方法）
+        const truncateText = (text, maxLength = 50) => {
+            if (!text) return "";
+            return text.length > maxLength
+                ? text.substring(0, maxLength - 3) + "..."
+                : text;
+        };
+
+        // 截断URL显示（保留兼容性）
         const truncateUrl = (url) => {
             if (!url) return "-";
             return url.length > 50 ? url.substring(0, 47) + "..." : url;
@@ -930,6 +940,7 @@ export default {
             getFileTypeIcon,
             getFileTypeColor,
             formatFileSize,
+            truncateText,
             truncateUrl,
             getProgressStatusIcon,
             getProgressStatusColor,
@@ -1025,9 +1036,18 @@ export default {
     font-size: 14px;
     font-weight: 500;
     color: #303133;
-    white-space: nowrap;
+}
+
+.file-name-multiline {
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-all;
+    line-height: 1.4;
+    max-height: 3.6em; /* 约2.5行的高度 */
     overflow: hidden;
-    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .file-type {
@@ -1047,10 +1067,24 @@ export default {
     font-family: "Courier New", monospace;
 }
 
+.file-path-truncated {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
 .download-url {
     font-size: 13px;
     color: #606266;
     font-family: "Courier New", monospace;
+}
+
+.download-url-truncated {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
 }
 
 .empty-state {

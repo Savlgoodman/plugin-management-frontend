@@ -31,18 +31,18 @@ const routes = [
                 component: FilePage,
                 meta: { title: "规范管理" },
             },
-            {
-                path: "settings",
-                name: "settings",
-                component: SettingsPage,
-                meta: { title: "系统设置" },
-            },
-            {
-                path: "analytics",
-                name: "analytics",
-                component: AnalyticsPage,
-                meta: { title: "数据分析" },
-            },
+            // {
+            //     path: "settings",
+            //     name: "settings",
+            //     component: SettingsPage,
+            //     meta: { title: "系统设置" },
+            // },
+            // {
+            //     path: "analytics",
+            //     name: "analytics",
+            //     component: AnalyticsPage,
+            //     meta: { title: "数据分析" },
+            // },
         ],
     },
     {

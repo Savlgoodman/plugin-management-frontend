@@ -25,80 +25,82 @@
             </div>
         </template>
 
-        <!-- 插件列表 -->
-        <div class="plugins-list" v-loading="loading">
-            <div
-                v-for="plugin in plugins"
-                :key="plugin.plugin_id"
-                :class="[
-                    'plugin-item',
-                    { active: selectedPlugin === plugin.plugin_id },
-                ]"
-                @click="handlePluginSelect(plugin.plugin_id)"
-            >
-                <div class="plugin-content">
-                    <div class="plugin-info">
-                        <div
-                            class="plugin-icon"
-                            :style="{ color: getPluginStatusColor(plugin) }"
-                        >
-                            <el-icon :size="16">
-                                <component :is="getPluginIcon(plugin)" />
-                            </el-icon>
+        <div class="card-body">
+            <!-- 插件列表 -->
+            <div class="plugins-list" v-loading="loading">
+                <div
+                    v-for="plugin in plugins"
+                    :key="plugin.plugin_id"
+                    :class="[
+                        'plugin-item',
+                        { active: selectedPlugin === plugin.plugin_id },
+                    ]"
+                    @click="handlePluginSelect(plugin.plugin_id)"
+                >
+                    <div class="plugin-content">
+                        <div class="plugin-info">
+                            <div
+                                class="plugin-icon"
+                                :style="{ color: getPluginStatusColor(plugin) }"
+                            >
+                                <el-icon :size="16">
+                                    <component :is="getPluginIcon(plugin)" />
+                                </el-icon>
+                            </div>
+                            <div class="plugin-details">
+                                <div class="plugin-name">
+                                    {{ plugin.plugin_name }}
+                                </div>
+                                <div class="plugin-status">
+                                    <el-tag
+                                        :type="getPluginStatusType(plugin)"
+                                        size="small"
+                                    >
+                                        {{ getPluginStatusText(plugin) }}
+                                    </el-tag>
+                                </div>
+                            </div>
                         </div>
-                        <div class="plugin-details">
-                            <div class="plugin-name">
-                                {{ plugin.plugin_name }}
-                            </div>
-                            <div class="plugin-status">
-                                <el-tag
-                                    :type="getPluginStatusType(plugin)"
-                                    size="small"
-                                >
-                                    {{ getPluginStatusText(plugin) }}
-                                </el-tag>
-                            </div>
+                        <div class="plugin-count">
+                            <span class="count-number">{{
+                                plugin.record_count || 0
+                            }}</span>
+                            <span class="count-label">文件</span>
                         </div>
                     </div>
-                    <div class="plugin-count">
-                        <span class="count-number">{{
-                            plugin.record_count || 0
-                        }}</span>
-                        <span class="count-label">文件</span>
+                    <div class="plugin-progress">
+                        <el-progress
+                            :percentage="getPluginProgress(plugin)"
+                            :color="getPluginStatusColor(plugin)"
+                            :show-text="false"
+                            :stroke-width="3"
+                        />
                     </div>
-                </div>
-                <div class="plugin-progress">
-                    <el-progress
-                        :percentage="getPluginProgress(plugin)"
-                        :color="getPluginStatusColor(plugin)"
-                        :show-text="false"
-                        :stroke-width="3"
-                    />
                 </div>
             </div>
-        </div>
 
-        <!-- 操作按钮 -->
-        <div class="action-buttons">
-            <div class="action-btn-wrapper">
-            <el-button
-                type="primary"
-                @click="$emit('convert-plugin')"
-                    class="action-btn convert-btn"
-            >
-                <el-icon><Plus /></el-icon>
-                    <span>转换插件</span>
-            </el-button>
-            </div>
-            <div class="action-btn-wrapper">
-            <el-button
-                type="success"
-                @click="$emit('manage-tasks')"
-                    class="action-btn manage-btn"
-            >
-                <el-icon><Setting /></el-icon>
-                    <span>任务管理</span>
-            </el-button>
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <div class="action-btn-wrapper">
+                    <el-button
+                        type="primary"
+                        @click="$emit('convert-plugin')"
+                        class="action-btn convert-btn"
+                    >
+                        <el-icon><Plus /></el-icon>
+                        <span>转换插件</span>
+                    </el-button>
+                </div>
+                <div class="action-btn-wrapper">
+                    <el-button
+                        type="success"
+                        @click="$emit('manage-tasks')"
+                        class="action-btn manage-btn"
+                    >
+                        <el-icon><Setting /></el-icon>
+                        <span>任务管理</span>
+                    </el-button>
+                </div>
             </div>
         </div>
     </el-card>
@@ -228,12 +230,29 @@ export default {
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid #e4e7ed;
+    display: flex;
+    flex-direction: column;
+}
+
+.plugin-categories-card :deep(.el-card__body) {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex: 1;
 }
 
 .header-left {
@@ -262,8 +281,9 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 400px;
+    flex: 1;
     overflow-y: auto;
+    min-height: 0;
 }
 
 .plugin-item {
@@ -341,11 +361,12 @@ export default {
 }
 
 .action-buttons {
-    margin-top: 16px;
+    margin-top: 12px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     width: 100%;
+    flex-shrink: 0;
 }
 
 .action-btn-wrapper {
