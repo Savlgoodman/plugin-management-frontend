@@ -8,15 +8,48 @@
                     <el-tag class="count-tag">{{ total }} 个文档</el-tag>
                 </div>
                 <div class="header-right">
-                    <el-button
+                    <el-dropdown
+                        split-button
                         type="primary"
                         class="rounded-button"
-                        @click="handleBatchDownload"
+                        @click="handleBatchDownloadAsText"
                         :disabled="selectedDocuments.length === 0"
                     >
-                        <el-icon><Download /></el-icon>
-                        批量下载 ({{ selectedDocuments.length }})
-                    </el-button>
+                        <el-icon><Document /></el-icon>
+                        批量下载文本 ({{ selectedDocuments.length }})
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item
+                                    @click="handleBatchDownload"
+                                    :disabled="selectedDocuments.length === 0"
+                                >
+                                    <el-icon><Download /></el-icon>
+                                    批量下载原始文档
+                                </el-dropdown-item>
+                                <el-dropdown-item
+                                    @click="handleBatchDownloadAsJson"
+                                    :disabled="selectedDocuments.length === 0"
+                                >
+                                    <el-icon><DataBoard /></el-icon>
+                                    分别下载JSON文件
+                                </el-dropdown-item>
+                                <el-dropdown-item
+                                    @click="handleBatchDownloadAsMergedText"
+                                    :disabled="selectedDocuments.length === 0"
+                                >
+                                    <el-icon><Files /></el-icon>
+                                    合并下载为文本文件
+                                </el-dropdown-item>
+                                <el-dropdown-item
+                                    @click="handleBatchDownloadAsMergedJson"
+                                    :disabled="selectedDocuments.length === 0"
+                                >
+                                    <el-icon><Collection /></el-icon>
+                                    合并下载为JSON文件
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
                 </div>
             </div>
         </template>
@@ -290,7 +323,7 @@
                 <el-table-column
                     label="操作"
                     fixed="right"
-                    width="160"
+                    width="120"
                     header-align="center"
                 >
                     <template #default="{ row }">
@@ -304,24 +337,16 @@
                                     <el-icon><View /></el-icon>
                                 </el-button>
                             </el-tooltip>
-                            <el-tooltip content="下载" placement="top">
+                            <el-tooltip content="下载文本文件" placement="top">
                                 <el-button
                                     text
-                                    @click="handleDownload(row)"
+                                    @click="handleDownloadAsText(row)"
                                     class="action-btn"
                                 >
-                                    <el-icon><Download /></el-icon>
+                                    <el-icon><Document /></el-icon>
                                 </el-button>
                             </el-tooltip>
-                            <el-tooltip content="详情" placement="top">
-                                <el-button
-                                    text
-                                    @click="handleViewDetails(row)"
-                                    class="action-btn"
-                                >
-                                    <el-icon><InfoFilled /></el-icon>
-                                </el-button>
-                            </el-tooltip>
+
                             <el-tooltip content="删除" placement="top">
                                 <el-button
                                     text
@@ -351,6 +376,142 @@
                 @current-change="handleCurrentChange"
             />
         </div>
+
+        <!-- 预览模态框 -->
+        <el-dialog
+            v-model="previewVisible"
+            :title="`文档详情 - ${
+                previewData['标题'] ||
+                previewData.name ||
+                previewData['文档名称'] ||
+                '未知文档'
+            }`"
+            width="80%"
+            max-width="1000px"
+            :close-on-click-modal="false"
+            destroy-on-close
+        >
+            <div class="preview-content" v-if="previewData">
+                <div class="preview-grid">
+                    <div
+                        v-for="(value, key) in previewData"
+                        :key="key"
+                        class="preview-item"
+                    >
+                        <div class="preview-label">{{ key }}</div>
+                        <div class="preview-value">
+                            <template
+                                v-if="
+                                    key === '标题' ||
+                                    key === '文档名称' ||
+                                    key === 'name' ||
+                                    key === '参数1_链接文本'
+                                "
+                            >
+                                <div class="document-name-preview">
+                                    <div
+                                        class="document-icon-preview"
+                                        :style="{
+                                            color: getDocumentTypeColor(
+                                                previewData.type ||
+                                                    previewData['类型']
+                                            ),
+                                        }"
+                                    >
+                                        <el-icon :size="20">
+                                            <component
+                                                :is="
+                                                    getDocumentTypeIcon(
+                                                        previewData.type ||
+                                                            previewData['类型']
+                                                    )
+                                                "
+                                            />
+                                        </el-icon>
+                                    </div>
+                                    <span>{{ value || "-" }}</span>
+                                </div>
+                            </template>
+                            <template
+                                v-else-if="
+                                    key === '文档分类' || key === 'category'
+                                "
+                            >
+                                <el-tag
+                                    :color="getCategoryColor(value)"
+                                    effect="light"
+                                    round
+                                    size="default"
+                                >
+                                    {{ value || "-" }}
+                                </el-tag>
+                            </template>
+                            <template
+                                v-else-if="key === '大小' || key === 'size'"
+                            >
+                                <span class="size-value">{{
+                                    formatFileSize(value) || "-"
+                                }}</span>
+                            </template>
+                            <template
+                                v-else-if="
+                                    key === '采集日期' || key === 'collectDate'
+                                "
+                            >
+                                <span class="date-value">{{
+                                    formatDate(value) || "-"
+                                }}</span>
+                            </template>
+                            <template
+                                v-else-if="
+                                    key === '下载次数' ||
+                                    key === 'downloadCount'
+                                "
+                            >
+                                <el-tag type="info" effect="plain" round>
+                                    {{ value || 0 }} 次
+                                </el-tag>
+                            </template>
+                            <template v-else>
+                                <span class="text-value">{{
+                                    value || "-"
+                                }}</span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="previewVisible = false">关闭</el-button>
+                    <el-dropdown
+                        split-button
+                        type="primary"
+                        @click="handleDownloadAsText(previewData)"
+                    >
+                        <el-icon><Document /></el-icon>
+                        下载为文本
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item
+                                    @click="handleDownload(previewData)"
+                                >
+                                    <el-icon><Download /></el-icon>
+                                    下载原始文档
+                                </el-dropdown-item>
+                                <el-dropdown-item
+                                    @click="handleDownloadAsJson(previewData)"
+                                >
+                                    <el-icon><DataBoard /></el-icon>
+                                    下载为JSON文件 (.json)
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </div>
+            </template>
+        </el-dialog>
     </el-card>
 </template>
 
@@ -385,6 +546,10 @@ export default {
         const documents = ref([]);
         const total = ref(0);
         const isInitialLoad = ref(true); // 用于标识是否为初始加载
+
+        // 预览相关数据
+        const previewVisible = ref(false);
+        const previewData = ref({});
 
         // 计算属性 - 分页后的文档
         const paginatedDocuments = computed(() => {
@@ -670,21 +835,215 @@ export default {
             }
         };
 
-        const handlePreview = async (row) => {
-            try {
-                const documentName = row.name || row["文档名称"];
+        // 批量下载为文本文件
+        const handleBatchDownloadAsText = async () => {
+            if (selectedDocuments.value.length === 0) {
+                ElMessage.warning("请先选择要下载的文档");
+                return;
+            }
 
-                if (!row.id) {
-                    ElMessage.warning("文档ID缺失，无法预览");
-                    return;
+            try {
+                loading.value = true;
+                ElMessage.info(
+                    `开始批量下载 ${selectedDocuments.value.length} 个文档的文本文件...`
+                );
+
+                for (let i = 0; i < selectedDocuments.value.length; i++) {
+                    const doc = selectedDocuments.value[i];
+
+                    // 稍微延迟，避免浏览器阻止多个下载
+                    if (i > 0) {
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 200)
+                        );
+                    }
+
+                    handleDownloadAsText(doc);
                 }
 
-                const previewUrl = await previewDocument(row.id);
+                ElMessage.success(
+                    `成功生成 ${selectedDocuments.value.length} 个文本文件`
+                );
+            } catch (error) {
+                ElMessage.error("批量文本下载失败: " + error.message);
+            } finally {
+                loading.value = false;
+            }
+        };
 
-                // 在新窗口中打开预览
-                window.open(previewUrl, "_blank");
+        // 批量下载为JSON文件
+        const handleBatchDownloadAsJson = async () => {
+            if (selectedDocuments.value.length === 0) {
+                ElMessage.warning("请先选择要下载的文档");
+                return;
+            }
 
-                ElMessage.success(`正在预览文档: ${documentName}`);
+            try {
+                loading.value = true;
+                ElMessage.info(
+                    `开始批量下载 ${selectedDocuments.value.length} 个文档的JSON文件...`
+                );
+
+                for (let i = 0; i < selectedDocuments.value.length; i++) {
+                    const doc = selectedDocuments.value[i];
+
+                    // 稍微延迟，避免浏览器阻止多个下载
+                    if (i > 0) {
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 200)
+                        );
+                    }
+
+                    handleDownloadAsJson(doc);
+                }
+
+                ElMessage.success(
+                    `成功生成 ${selectedDocuments.value.length} 个JSON文件`
+                );
+            } catch (error) {
+                ElMessage.error("批量JSON下载失败: " + error.message);
+            } finally {
+                loading.value = false;
+            }
+        };
+
+        // 合并下载为文本文件
+        const handleBatchDownloadAsMergedText = () => {
+            if (selectedDocuments.value.length === 0) {
+                ElMessage.warning("请先选择要下载的文档");
+                return;
+            }
+
+            try {
+                // 构建合并的文本内容
+                let textContent = `批量文档详情\n`;
+                textContent += `${"=".repeat(80)}\n`;
+                textContent += `导出时间: ${new Date().toLocaleString()}\n`;
+                textContent += `文档总数: ${selectedDocuments.value.length}\n`;
+                textContent += `${"=".repeat(80)}\n\n`;
+
+                selectedDocuments.value.forEach((doc, index) => {
+                    const documentName =
+                        doc["标题"] ||
+                        doc.name ||
+                        doc["文档名称"] ||
+                        `文档_${doc._id || "unknown"}`;
+
+                    textContent += `${index + 1}. ${documentName}\n`;
+                    textContent += `${"-".repeat(50)}\n`;
+
+                    // 遍历所有字段
+                    for (const [key, value] of Object.entries(doc)) {
+                        if (
+                            value === null ||
+                            value === undefined ||
+                            value === ""
+                        ) {
+                            continue;
+                        }
+
+                        let formattedValue = value;
+
+                        if (key === "大小" || key === "size") {
+                            formattedValue = formatFileSize(value);
+                        } else if (
+                            key === "采集日期" ||
+                            key === "collectDate"
+                        ) {
+                            formattedValue = formatDate(value);
+                        } else if (
+                            key === "下载次数" ||
+                            key === "downloadCount"
+                        ) {
+                            formattedValue = `${value} 次`;
+                        }
+
+                        textContent += `${key}: ${formattedValue}\n`;
+                    }
+
+                    textContent += `\n`;
+                });
+
+                // 创建Blob对象
+                const blob = new Blob([textContent], {
+                    type: "text/plain;charset=utf-8",
+                });
+
+                // 创建下载链接
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `批量文档详情_${
+                    selectedDocuments.value.length
+                }个_${new Date().toISOString().slice(0, 10)}.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                URL.revokeObjectURL(link.href);
+
+                ElMessage.success(
+                    `成功导出 ${selectedDocuments.value.length} 个文档的合并文本文件`
+                );
+            } catch (error) {
+                console.error("合并文本文件下载失败:", error);
+                ElMessage.error("合并文本文件下载失败");
+            }
+        };
+
+        // 合并下载为JSON文件
+        const handleBatchDownloadAsMergedJson = () => {
+            if (selectedDocuments.value.length === 0) {
+                ElMessage.warning("请先选择要下载的文档");
+                return;
+            }
+
+            try {
+                // 构建合并的JSON数据
+                const jsonData = {
+                    batchInfo: {
+                        exportTime: new Date().toISOString(),
+                        exportBy: "文档管理系统",
+                        totalCount: selectedDocuments.value.length,
+                    },
+                    documents: selectedDocuments.value.map((doc, index) => ({
+                        index: index + 1,
+                        data: doc,
+                    })),
+                };
+
+                const jsonString = JSON.stringify(jsonData, null, 2);
+
+                // 创建Blob对象
+                const blob = new Blob([jsonString], {
+                    type: "application/json;charset=utf-8",
+                });
+
+                // 创建下载链接
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `批量文档详情_${
+                    selectedDocuments.value.length
+                }个_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                URL.revokeObjectURL(link.href);
+
+                ElMessage.success(
+                    `成功导出 ${selectedDocuments.value.length} 个文档的合并JSON文件`
+                );
+            } catch (error) {
+                console.error("合并JSON文件下载失败:", error);
+                ElMessage.error("合并JSON文件下载失败");
+            }
+        };
+
+        const handlePreview = (row) => {
+            try {
+                // 直接在模态框中显示文档的完整信息
+                previewData.value = { ...row };
+                previewVisible.value = true;
             } catch (error) {
                 ElMessage.error("预览失败: " + error.message);
             }
@@ -692,7 +1051,13 @@ export default {
 
         const handleDownload = async (row) => {
             try {
-                const documentName = row.name || row["文档名称"];
+                const documentName =
+                    row["标题"] ||
+                    row.name ||
+                    row["文档名称"] ||
+                    row["参数1_链接文本"] ||
+                    row["标准名称"] ||
+                    `文档_${row._id || "unknown"}`;
 
                 if (!row.id) {
                     ElMessage.warning("文档ID缺失，无法下载");
@@ -715,8 +1080,110 @@ export default {
             }
         };
 
-        const handleViewDetails = (row) => {
-            ElMessage.success(`查看详情: ${row.name || row["文档名称"]}`);
+        // 下载为文本文件
+        const handleDownloadAsText = (row) => {
+            try {
+                const documentName =
+                    row["标题"] ||
+                    row.name ||
+                    row["文档名称"] ||
+                    row["参数1_链接文本"] ||
+                    row["标准名称"] ||
+                    `文档_${row._id || "unknown"}`;
+
+                // 构建文本内容
+                let textContent = `文档详情\n`;
+                textContent += `${"=".repeat(50)}\n\n`;
+
+                // 遍历所有字段并格式化
+                for (const [key, value] of Object.entries(row)) {
+                    // 跳过空值和特殊字段
+                    if (value === null || value === undefined || value === "") {
+                        continue;
+                    }
+
+                    let formattedValue = value;
+
+                    // 根据字段类型进行特殊格式化
+                    if (key === "大小" || key === "size") {
+                        formattedValue = formatFileSize(value);
+                    } else if (key === "采集日期" || key === "collectDate") {
+                        formattedValue = formatDate(value);
+                    } else if (key === "下载次数" || key === "downloadCount") {
+                        formattedValue = `${value} 次`;
+                    }
+
+                    textContent += `${key}: ${formattedValue}\n`;
+                }
+
+                textContent += `\n${"=".repeat(50)}\n`;
+                textContent += `导出时间: ${new Date().toLocaleString()}\n`;
+
+                // 创建Blob对象
+                const blob = new Blob([textContent], {
+                    type: "text/plain;charset=utf-8",
+                });
+
+                // 创建下载链接
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `${documentName}_详情.txt`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // 释放URL对象
+                URL.revokeObjectURL(link.href);
+
+                ElMessage.success("文本文件下载完成");
+            } catch (error) {
+                console.error("下载文本文件失败:", error);
+                ElMessage.error("下载文本文件失败");
+            }
+        };
+
+        // 下载为JSON文件
+        const handleDownloadAsJson = (row) => {
+            try {
+                const documentName =
+                    row["标题"] ||
+                    row.name ||
+                    row["文档名称"] ||
+                    row["参数1_链接文本"] ||
+                    row["标准名称"] ||
+                    `文档_${row._id || "unknown"}`;
+
+                // 构建JSON数据
+                const jsonData = {
+                    documentInfo: row,
+                    exportTime: new Date().toISOString(),
+                    exportBy: "文档管理系统",
+                };
+
+                // 格式化JSON字符串
+                const jsonString = JSON.stringify(jsonData, null, 2);
+
+                // 创建Blob对象
+                const blob = new Blob([jsonString], {
+                    type: "application/json;charset=utf-8",
+                });
+
+                // 创建下载链接
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `${documentName}_详情.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // 释放URL对象
+                URL.revokeObjectURL(link.href);
+
+                ElMessage.success("JSON文件下载完成");
+            } catch (error) {
+                console.error("下载JSON文件失败:", error);
+                ElMessage.error("下载JSON文件失败");
+            }
         };
 
         const handleDelete = (row) => {
@@ -790,6 +1257,8 @@ export default {
             availableColumns,
             selectedColumns,
             paginatedDocuments,
+            previewVisible,
+            previewData,
             formatDate,
             formatFileSize,
             getDocumentTypeIcon,
@@ -806,9 +1275,14 @@ export default {
             handleRefresh,
             handleExport,
             handleBatchDownload,
+            handleBatchDownloadAsText,
+            handleBatchDownloadAsJson,
+            handleBatchDownloadAsMergedText,
+            handleBatchDownloadAsMergedJson,
             handlePreview,
             handleDownload,
-            handleViewDetails,
+            handleDownloadAsText,
+            handleDownloadAsJson,
             handleDelete,
             handleCategoryChange,
             handleColumnChange,
@@ -1112,6 +1586,91 @@ export default {
     .document-icon {
         width: 28px;
         height: 28px;
+    }
+}
+
+/* 预览模态框样式 */
+.preview-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 20px 0;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.preview-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.preview-item:last-child {
+    border-bottom: none;
+}
+
+.preview-label {
+    font-weight: 600;
+    color: #303133;
+    min-width: 120px;
+    margin-right: 20px;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.preview-value {
+    flex: 1;
+    color: #606266;
+    font-size: 14px;
+    word-break: break-all;
+    line-height: 1.5;
+}
+
+.document-name-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.document-icon-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(66, 133, 244, 0.1);
+    flex-shrink: 0;
+}
+
+.size-value,
+.date-value,
+.text-value {
+    color: #606266;
+    font-size: 14px;
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* 预览模态框响应式 */
+@media (max-width: 768px) {
+    .preview-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .preview-label {
+        margin-bottom: 8px;
+        margin-right: 0;
+        min-width: auto;
     }
 }
 </style>

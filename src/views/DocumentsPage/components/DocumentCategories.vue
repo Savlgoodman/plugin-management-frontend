@@ -25,7 +25,7 @@
         <!-- 分类列表 -->
         <div class="categories-list">
             <div
-                v-for="category in categories"
+                v-for="category in filteredCategories"
                 :key="category.id"
                 :class="[
                     'category-item',
@@ -45,9 +45,6 @@
                         </div>
                         <div class="category-details">
                             <div class="category-name">{{ category.name }}</div>
-                            <div class="category-plugin">
-                                {{ category.plugin }}
-                            </div>
                         </div>
                     </div>
                     <div class="category-count">
@@ -63,6 +60,14 @@
                         :stroke-width="3"
                     />
                 </div>
+            </div>
+            
+            <!-- 当没有有效分类时显示提示 -->
+            <div v-if="filteredCategories.length === 0 && categories.length > 0" class="no-documents-tip">
+                <el-empty 
+                    description="暂无文档数据" 
+                    :image-size="80"
+                />
             </div>
         </div>
 
@@ -81,7 +86,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { ElMessage } from "element-plus";
 import { getCategories, updateDocumentCounts } from "../api/documents";
 
@@ -93,15 +98,24 @@ export default {
         const categories = ref([]);
         const refreshing = ref(false);
 
+        // 过滤掉文档数为0的分类
+        const filteredCategories = computed(() => {
+            return categories.value.filter(category => {
+                // 只显示文档数大于0的分类
+                return category.count > 0;
+            });
+        });
+
         // 从 API 获取分类数据
         const loadCategories = async () => {
             try {
                 const data = await getCategories();
                 categories.value = data;
 
-                // 自动选择第一个分类
-                if (data.length > 0 && selectedCategory.value === "all") {
-                    await handleCategorySelect(data[0].id);
+                // 自动选择第一个有文档的分类
+                const validCategories = data.filter(category => category.count > 0);
+                if (validCategories.length > 0 && selectedCategory.value === "all") {
+                    await handleCategorySelect(validCategories[0].id);
                 }
             } catch (error) {
                 console.error("获取分类数据失败:", error);
@@ -184,6 +198,7 @@ export default {
         return {
             selectedCategory,
             categories,
+            filteredCategories,
             refreshing,
             handleCategorySelect,
             handleRefresh,
@@ -297,12 +312,6 @@ export default {
     line-height: 1.2;
 }
 
-.category-plugin {
-    font-size: 12px;
-    color: #86909c;
-    margin-top: 2px;
-}
-
 .category-count {
     text-align: right;
 }
@@ -336,6 +345,11 @@ export default {
     font-weight: 500;
 }
 
+.no-documents-tip {
+    padding: 20px;
+    text-align: center;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .category-item {
@@ -349,10 +363,6 @@ export default {
 
     .category-name {
         font-size: 13px;
-    }
-
-    .category-plugin {
-        font-size: 11px;
     }
 
     .count-number {

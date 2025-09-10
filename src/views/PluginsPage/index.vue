@@ -23,11 +23,6 @@
                     <div class="plugins-list-section">
                         <PluginsList />
                     </div>
-
-                    <!-- 采集性能分析 -->
-                    <div class="performance-chart-section">
-                        <PerformanceChart />
-                    </div>
                 </div>
 
                 <!-- 右侧卡片区域 -->
@@ -43,10 +38,6 @@
                     </div>
                 </div>
             </div>
-            <!-- 最近采集数据 -->
-            <div class="recent-collection-section">
-                <RecentCollectionData />
-            </div>
         </div>
     </div>
 </template>
@@ -55,8 +46,6 @@
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
 import StatsCard from "./components/StatsCard.vue";
-import PerformanceChart from "./components/PerformanceChart.vue";
-import RecentCollectionData from "./components/RecentCollectionData.vue";
 import PluginsList from "./components/PluginsList.vue";
 import PluginStatusChart from "./components/PluginStatusChart.vue";
 import DocumentCard from "./components/DocumentCard.vue";
@@ -66,8 +55,6 @@ export default {
     name: "PluginsPage",
     components: {
         StatsCard,
-        PerformanceChart,
-        RecentCollectionData,
         PluginsList,
         PluginStatusChart,
         DocumentCard,
@@ -121,10 +108,6 @@ export default {
     min-height: 600px;
 }
 
-.performance-chart-section {
-    width: 100%;
-}
-
 .right-cards-section {
     display: flex;
     flex-direction: column;
@@ -139,11 +122,6 @@ export default {
 .document-card-wrapper {
     width: 100%;
     flex: 1;
-}
-
-.recent-collection-section {
-    margin-top: 24px;
-    width: 100%;
 }
 
 /* 响应式设计 */
@@ -188,19 +166,11 @@ export default {
         grid-template-columns: 1fr;
         gap: 16px;
     }
-
-    .recent-collection-section {
-        margin-top: 16px;
-    }
 }
 
 @media (max-width: 480px) {
     .page-container {
         padding: 12px;
-    }
-
-    .recent-collection-section {
-        margin-top: 12px;
     }
 }
 </style>

@@ -145,8 +145,14 @@
                 v-loading="loading"
                 :show-overflow-tooltip="false"
                 table-layout="fixed"
+                :row-class-name="getRowClassName"
             >
-                <el-table-column type="selection" width="55" fixed="left" />
+                <el-table-column
+                    type="selection"
+                    width="55"
+                    fixed="left"
+                    :selectable="checkSelectable"
+                />
 
                 <el-table-column
                     label="文件名"
@@ -262,7 +268,7 @@
             <el-pagination
                 v-model:current-page="currentPage"
                 v-model:page-size="pageSize"
-                :page-sizes="[50, 100, 200, 500]"
+                :page-sizes="[20, 50, 100, 200]"
                 :total="total"
                 layout="total, sizes, prev, pager, next, jumper"
                 @size-change="handleSizeChange"
@@ -361,7 +367,7 @@ export default {
         const filterStatus = ref("");
         const filterType = ref("");
         const currentPage = ref(1);
-        const pageSize = ref(100);
+        const pageSize = ref(20);
         const total = ref(0);
         const lastZipInfo = ref(null);
 
@@ -413,6 +419,21 @@ export default {
             } finally {
                 loading.value = false;
             }
+        };
+
+        // 检查行是否可选
+        const checkSelectable = (row) => {
+            // 只有已下载的文件（is_download === 1）才可以被选中
+            return row.is_download === 1;
+        };
+
+        // 获取行的CSS类名
+        const getRowClassName = ({ row }) => {
+            // 为未下载的文件添加特殊样式
+            if (row.is_download === 0) {
+                return "row-not-selectable";
+            }
+            return "";
         };
 
         // 处理选择变化
@@ -926,6 +947,8 @@ export default {
             total,
             lastZipInfo,
             downloadProgress,
+            checkSelectable,
+            getRowClassName,
             handleSelectionChange,
             handleBatchDownload,
             handleSingleDownload,
@@ -1156,5 +1179,33 @@ export default {
 
 .progress-tips p:last-child {
     margin-bottom: 0;
+}
+
+/* 不可选行的样式 */
+.files-table :deep(.row-not-selectable) {
+    background-color: #fafafa !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.files-table :deep(.row-not-selectable:hover) {
+    background-color: #fafafa !important;
+}
+
+.files-table :deep(.row-not-selectable .el-checkbox) {
+    cursor: not-allowed;
+}
+
+.files-table
+    :deep(
+        .row-not-selectable .el-checkbox__input.is-disabled .el-checkbox__inner
+    ) {
+    background-color: #f5f7fa;
+    border-color: #e4e7ed;
+    cursor: not-allowed;
+}
+
+.files-table :deep(.row-not-selectable td) {
+    color: #c0c4cc;
 }
 </style>

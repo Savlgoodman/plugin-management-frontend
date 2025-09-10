@@ -433,21 +433,15 @@ export const getPlugins = fetchPluginsList;
 // 模拟插件状态统计数据
 const mockStatusData = [
     {
-        name: "活跃",
-        value: 12,
-        percentage: 75,
+        name: "可用",
+        value: 24,
+        percentage: 100,
         color: "#00b42a",
     },
     {
-        name: "准备中",
-        value: 3,
-        percentage: 18.75,
-        color: "#4285f4",
-    },
-    {
         name: "执行中",
-        value: 1,
-        percentage: 6.25,
+        value: 0,
+        percentage: 0,
         color: "#fbbc04",
     },
 ];
@@ -568,14 +562,14 @@ const mockRecentData = [
 
 // 模拟文档列表数据
 const mockDocumentList = [
-    {
-        id: 1,
-        title: "数据采集报告",
-        date: "2024-01-15",
-        downloads: 128,
-        icon: "Document",
-        iconColor: "#4285f4",
-    },
+    // {
+    //     id: 1,
+    //     title: "数据采集报告",
+    //     date: "2024-01-15",
+    //     downloads: 128,
+    //     icon: "Document",
+    //     iconColor: "#4285f4",
+    // },
     {
         id: 2,
         title: "插件配置指南",
@@ -600,46 +594,46 @@ const mockDocumentList = [
         icon: "Connection",
         iconColor: "#ea4335",
     },
-    {
-        id: 5,
-        title: "数据采集报告",
-        date: "2024-01-15",
-        downloads: 128,
-        icon: "Document",
-        iconColor: "#4285f4",
-    },
-    {
-        id: 6,
-        title: "插件配置指南",
-        date: "2024-01-14",
-        downloads: 89,
-        icon: "Setting",
-        iconColor: "#34a853",
-    },
-    {
-        id: 7,
-        title: "系统架构文档",
-        date: "2024-01-13",
-        downloads: 156,
-        icon: "Files",
-        iconColor: "#fbbc04",
-    },
-    {
-        id: 8,
-        title: "API接口文档",
-        date: "2024-01-12",
-        downloads: 203,
-        icon: "Connection",
-        iconColor: "#ea4335",
-    },
-    {
-        id: 9,
-        title: "API接口文档",
-        date: "2024-01-12",
-        downloads: 203,
-        icon: "Connection",
-        iconColor: "#ea4335",
-    },
+    // {
+    //     id: 5,
+    //     title: "数据采集报告",
+    //     date: "2024-01-15",
+    //     downloads: 128,
+    //     icon: "Document",
+    //     iconColor: "#4285f4",
+    // },
+    // {
+    //     id: 6,
+    //     title: "插件配置指南",
+    //     date: "2024-01-14",
+    //     downloads: 89,
+    //     icon: "Setting",
+    //     iconColor: "#34a853",
+    // },
+    // {
+    //     id: 7,
+    //     title: "系统架构文档",
+    //     date: "2024-01-13",
+    //     downloads: 156,
+    //     icon: "Files",
+    //     iconColor: "#fbbc04",
+    // },
+    // {
+    //     id: 8,
+    //     title: "API接口文档",
+    //     date: "2024-01-12",
+    //     downloads: 203,
+    //     icon: "Connection",
+    //     iconColor: "#ea4335",
+    // },
+    // {
+    //     id: 9,
+    //     title: "API接口文档",
+    //     date: "2024-01-12",
+    //     downloads: 203,
+    //     icon: "Connection",
+    //     iconColor: "#ea4335",
+    // },
 ];
 
 /**
@@ -668,35 +662,35 @@ export const getStatsData = () => {
         setTimeout(() => {
             const mockStatsData_1 = [
                 {
-                    title: "活跃插件",
-                    value: "-",
+                    title: "插件数量",
+                    value: "24",
                     icon: "Download",
                     color: "#4285f4",
-                    trend: "全部正在运行",
+                    trend: "全部已就绪",
                     subtitle: "",
                 },
                 {
-                    title: "今日采集",
-                    value: "-",
+                    title: "采集规范数量",
+                    value: "1034",
                     icon: "DataBoard",
                     color: "#34a853",
-                    trend: "较昨日增长12%",
+                    trend: "已全部归档",
                     subtitle: "",
                 },
                 {
-                    title: "文档数量",
-                    value: "-",
+                    title: "总文档数量",
+                    value: "1225",
                     icon: "Document",
                     color: "#4285f4",
                     trend: "已分类管理",
                     subtitle: "",
                 },
                 {
-                    title: "采集状态",
-                    value: "-",
+                    title: "插件运行数量",
+                    value: "0",
                     icon: "TrendCharts",
                     color: "#fbbc04",
-                    trend: "-个源略有故障",
+                    trend: "准备就绪",
                     subtitle: "",
                 },
             ];

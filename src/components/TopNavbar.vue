@@ -11,8 +11,7 @@
                             </el-icon>
                         </div>
                         <div class="site-info">
-                            <div class="site-name">蜀道数据采集系统</div>
-                            <div class="site-desc">数据采集与管理平台</div>
+                            <div class="site-name">公文规范采集管理平台</div>
                         </div>
                     </div>
                 </div>

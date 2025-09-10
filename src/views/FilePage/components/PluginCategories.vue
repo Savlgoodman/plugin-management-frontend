@@ -130,7 +130,14 @@ export default {
             try {
                 const result = await getDownloadablePlugins();
                 if (result.success) {
-                    plugins.value = result.data.plugins || [];
+                    let pluginsList = result.data.plugins || [];
+                    // 按照文件个数从高到低排序
+                    pluginsList.sort((a, b) => {
+                        const countA = a.record_count || 0;
+                        const countB = b.record_count || 0;
+                        return countB - countA;
+                    });
+                    plugins.value = pluginsList;
                     // 默认选择第一个插件
                     if (plugins.value.length > 0 && !selectedPlugin.value) {
                         handlePluginSelect(plugins.value[0].plugin_id);
